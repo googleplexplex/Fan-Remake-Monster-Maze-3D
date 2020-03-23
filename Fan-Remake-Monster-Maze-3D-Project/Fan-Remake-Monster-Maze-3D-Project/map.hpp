@@ -3,10 +3,8 @@
 
 typedef enum block {
 	none = 0,
-	//player,
 	wall,
-	//monster,
-	exit
+	door
 };
 constexpr unsigned int mapXSize = 25;
 constexpr unsigned int mapYSize = 25;
