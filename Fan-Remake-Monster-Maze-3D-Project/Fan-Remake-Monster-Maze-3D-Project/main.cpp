@@ -1,31 +1,36 @@
 #include <iostream>
 #include <conio.h>
+#include "map.hpp"
 
-typedef enum block {
-	none = 0,
-	player,
-	wall,
-	monster,
-	exit
+typedef enum direction {
+	N = 0,
+	W,
+	E,
+	S
 };
-constexpr unsigned int mapXSize = 26;
-constexpr unsigned int mapYSize = 26;
-block map[mapXSize][mapYSize];
+//-N-
+//W-E
+//-S-
 
-class playerClass
+struct point
+{
+	unsigned int x, y;
+};
+
+class playerClass : public point
 {
 public:
-	unsigned int x, y;
+	direction viewDirection;
 	void makesMove()
 	{
 		//...
 	}
 }player;
 
-class monsterClass
+class monsterClass : public point
 {
 public:
-	unsigned int x, y;
+	point target;
 	bool seesPlayer() //TOTEST
 	{
 		if (player.x == monster.x)
@@ -64,26 +69,43 @@ public:
 		}
 		return false;
 	}
+	void makesMove()
+	{
+		//...
+	}
 }monster;
 
-void generateMap()
-{
-	//...
-}
+
 void generateGame()
 {
 	generateMap();
-	player.x = player.y = 1; //TOFIX
+	player.x = player.y = 1;
 	map[mapXSize - 1][mapYSize - 1] = exit;
-	monster.x = mapXSize / 2; monster.y = mapYSize / 2;
+	monster.x = mapXSize / 2; monster.y = mapYSize / 2; //TOFIX
 }
 
 
+
+void debugShowMap() {
+	for (int i = 0; i < mapYSize; i++) {
+		for (int j = 0; j < mapXSize; j++)
+			switch (map[i][j]) {
+			case wall: std::cout << "0"; break;
+			case none: std::cout << " "; break;
+			}
+		std::cout << std::endl;
+	}
+	std::cout << std::endl;
+}
+
 int main(void)
 {
-	while (true) //Game Loop
+	srand((unsigned)time(NULL));
+
+	while (true)
 	{
-		//...
+		generateMap();
+		debugShowMap();
 	}
 
 	return 0;

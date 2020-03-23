@@ -1,0 +1,97 @@
+#pragma once
+#include <time.h>
+
+typedef enum block {
+	none = 0,
+	//player,
+	wall,
+	//monster,
+	exit
+};
+constexpr unsigned int mapXSize = 25;
+constexpr unsigned int mapYSize = 25;
+block map[mapXSize][mapYSize];
+
+bool deadEnd(int x, int y) {
+	int a = 0;
+
+	if (x != 1) {
+		if (map[y][x - 2] == none)
+			a += 1;
+	}
+	else a += 1;
+
+	if (y != 1) {
+		if (map[y - 2][x] == none)
+			a += 1;
+	}
+	else a += 1;
+
+	if (x != mapXSize - 2) {
+		if (map[y][x + 2] == none)
+			a += 1;
+	}
+	else a += 1;
+
+	if (y != mapYSize - 2) {
+		if (map[y + 2][x] == none)
+			a += 1;
+	}
+	else a += 1;
+
+	if (a == 4)
+		return 1;
+	else
+		return 0;
+}
+void generateMap()
+{
+	int x, y, c, a;
+	bool b;
+
+	for (int i = 0; i < mapYSize; i++) // Массив заполняется землей-ноликами
+		for (int j = 0; j < mapXSize; j++)
+			map[i][j] = wall;
+
+	x = 3; y = 3; a = 0; // Точка приземления крота и счетчик
+	while (a < 10000) { // Да, простите, костыль, иначе есть как, но лень
+		map[y][x] = none; a++;
+		while (1) { // Бесконечный цикл, который прерывается только тупиком
+			c = rand() % 4; // Напоминаю, что крот прорывает
+			switch (c) {  // по две клетки в одном направлении за прыжок
+			case 0: if (y != 1)
+				if (map[y - 2][x] == wall) { // Вверх
+					map[y - 1][x] = none;
+					map[y - 2][x] = none;
+					y -= 2;
+				}
+			case 1: if (y != mapYSize - 2)
+				if (map[y + 2][x] == wall) { // Вниз
+					map[y + 1][x] = none;
+					map[y + 2][x] = none;
+					y += 2;
+				}
+			case 2: if (x != 1)
+				if (map[y][x - 2] == wall) { // Налево
+					map[y][x - 1] = none;
+					map[y][x - 2] = none;
+					x -= 2;
+				}
+			case 3: if (x != mapXSize - 2)
+				if (map[y][x + 2] == wall) { // Направо
+					map[y][x + 1] = none;
+					map[y][x + 2] = none;
+					x += 2;
+				}
+			}
+			if (deadEnd(x, y))
+				break;
+		}
+
+		if (deadEnd(x, y)) // Вытаскиваем крота из тупика
+			do {
+				x = 2 * (rand() % ((mapXSize - 1) / 2)) + 1;
+				y = 2 * (rand() % ((mapYSize - 1) / 2)) + 1;
+			} while (map[y][x] != none);
+	} // На этом и все.
+}
