@@ -130,7 +130,7 @@ void Game_Main()
 	RECT consoleWindowRect = { 0 };
 	GetWindowRect(mainWindowHWND, &consoleWindowRect);
 
-	MoveWindow(mainWindowHWND, consoleWindowRect.left, consoleWindowRect.top, screenSize.x, screenSize.y, NULL);
+	MoveWindow(mainWindowHWND, consoleWindowRect.left, consoleWindowRect.top, screenSize.x + 4, screenSize.y + 30, NULL);
 	Game_Menu();
 }
 

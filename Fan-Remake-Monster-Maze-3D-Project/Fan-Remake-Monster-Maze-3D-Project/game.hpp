@@ -189,7 +189,7 @@ POINT inline cubeDPoint(LONG num)
 }
 POINT inline cubePoint(LONG fNum, LONG sNum)
 {
-	return { screenSize.y / 48 * fNum, screenSize.y / 48 * sNum };
+	return { screenSize.y / 48 * fNum - 1, screenSize.y / 48 * sNum };
 }
 typedef enum sidesEnum {
 	leftSide = 0,
@@ -200,61 +200,61 @@ VERTICAL_TRAPEZE getTrapezeCoords(short range, sidesEnum side) //TODO
 {
 	switch (range)
 	{
-	case 1:
+	case 1://size = 2
 		switch (side)
 		{
 		case leftSide:
-			return { {0,0}, {0,screenSize.y}, cubePoint(2, 46), cubePoint(2, 2) };
-		case rightSide:
-			return { {0,0}, {0,0}, {0,0}, {0,0} }; //TODO
-		case frontSide:
-			return { {0,0}, {0,0}, {0,0}, {0,0} };
-		}
-	case 2:
-		switch (side)
-		{
-		case leftSide:
-			return { {0,0}, {0,0}, {0,0}, {0,0} };
+			return { cubePoint(0, 0), cubePoint(0, 48), cubePoint(2, 48 - 2), cubePoint(2, 2) };
 		case rightSide:
 			return { {0,0}, {0,0}, {0,0}, {0,0} };
 		case frontSide:
 			return { {0,0}, {0,0}, {0,0}, {0,0} };
 		}
-	case 3:
+	case 2: //size = 8
 		switch (side)
 		{
 		case leftSide:
-			return { {0,0}, {0,0}, {0,0}, {0,0} };
+			return { cubePoint(2, 2), cubePoint(2, 48 - 2), cubePoint(2 + 8, 48 - 2 - 8), cubePoint(2 + 8, 2 + 8) };
 		case rightSide:
 			return { {0,0}, {0,0}, {0,0}, {0,0} };
 		case frontSide:
 			return { {0,0}, {0,0}, {0,0}, {0,0} };
 		}
-	case 4:
+	case 3: //size=6
 		switch (side)
 		{
 		case leftSide:
-			return { {0,0}, {0,0}, {0,0}, {0,0} };
+			return { cubePoint(2 + 8, 2 + 8), cubePoint(10, 48 - 2 - 8), cubePoint(2 + 8 + 6, 48 - 2 - 8 - 6), cubePoint(2 + 8 + 6, 2 + 8 + 6) };
 		case rightSide:
 			return { {0,0}, {0,0}, {0,0}, {0,0} };
 		case frontSide:
 			return { {0,0}, {0,0}, {0,0}, {0,0} };
 		}
-	case 5:
+	case 4: //size=4
 		switch (side)
 		{
 		case leftSide:
-			return { {0,0}, {0,0}, {0,0}, {0,0} };
+			return { cubePoint(2 + 8 + 6, 2 + 8 + 6), cubePoint(2 + 8 + 6, 48 - 2 - 8 - 6), cubePoint(2 + 8 + 6 + 4, 48 - 2 - 8 - 6 - 4), cubePoint(2 + 8 + 6 + 4, 2 + 8 + 6 + 4) };
 		case rightSide:
 			return { {0,0}, {0,0}, {0,0}, {0,0} };
 		case frontSide:
 			return { {0,0}, {0,0}, {0,0}, {0,0} };
 		}
-	case 6:
+	case 5: //size=2
 		switch (side)
 		{
 		case leftSide:
+			return { cubePoint(2 + 8 + 6 + 4, 2 + 8 + 6 + 4), cubePoint(2 + 8 + 6 + 4, 48 - 2 - 8 - 6 - 4), cubePoint(2 + 8 + 6 + 4 + 2, 48 - 2 - 8 - 6 - 4 - 2), cubePoint(2 + 8 + 6 + 4 + 2, 2 + 8 + 6 + 4 + 2) };
+		case rightSide:
 			return { {0,0}, {0,0}, {0,0}, {0,0} };
+		case frontSide:
+			return { {0,0}, {0,0}, {0,0}, {0,0} };
+		}
+	case 6: //size=1
+		switch (side)
+		{
+		case leftSide:
+			return { cubePoint(2 + 8 + 6 + 4 + 2, 2 + 8 + 6 + 4 + 2), cubePoint(2 + 8 + 6 + 4 + 2, 48 - 2 - 8 - 6 - 4 - 2), cubePoint(2 + 8 + 6 + 4 + 2 + 1, 48 - 2 - 8 - 6 - 4 - 2 - 1), cubePoint(2 + 8 + 6 + 4 + 2 + 1, 2 + 8 + 6 + 4 + 2 + 1) };
 		case rightSide:
 			return { {0,0}, {0,0}, {0,0}, {0,0} };
 		case frontSide:
