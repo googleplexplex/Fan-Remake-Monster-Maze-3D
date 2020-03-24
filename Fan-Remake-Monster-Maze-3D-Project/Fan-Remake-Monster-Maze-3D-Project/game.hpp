@@ -178,10 +178,6 @@ void debugShowMap() {
 //	return 0;
 //}
 
-unsigned int inline cubePos(unsigned int num)
-{
-	return screenSize.y / 48 * num;
-}
 POINT inline cubeDPoint(LONG num)
 {
 	LONG temp = screenSize.y / 48 * num;
@@ -190,6 +186,27 @@ POINT inline cubeDPoint(LONG num)
 POINT inline cubePoint(LONG fNum, LONG sNum)
 {
 	return { screenSize.y / 48 * fNum - 1, screenSize.y / 48 * sNum };
+}
+POINT inline cubePointVerticalMirrored(LONG num)
+{
+	return { screenSize.y / 48 * num - 1, screenSize.y / 48 * (48 - num) };
+}
+POINT inline cubePointHorizontalMirrored(LONG fNum, LONG sNum)
+{
+	return { screenSize.y / 48 * (48 - fNum) - 1, screenSize.y / 48 * sNum };
+}
+POINT inline cubePointVerticalAndHorizontalMirrored(LONG num)
+{
+	return { screenSize.y / 48 * (48 - num) - 1, screenSize.y / 48 * (48 - num) };
+}
+VERTICAL_TRAPEZE inline cubeSquareInCenter(LONG size)
+{
+	return {
+		{ screenSize.y / 48 * (24 - size) - 1, screenSize.y / 48 * (24 - size) },
+		{ screenSize.y / 48 * (24 - size) - 1, screenSize.y / 48 * (24 + size) },
+		{ screenSize.y / 48 * (24 + size) - 1, screenSize.y / 48 * (24 + size) },
+		{ screenSize.y / 48 * (24 + size) - 1, screenSize.y / 48 * (24 - size) }
+	};
 }
 typedef enum sidesEnum {
 	leftSide = 0,
@@ -204,61 +221,61 @@ VERTICAL_TRAPEZE getTrapezeCoords(short range, sidesEnum side) //TODO
 		switch (side)
 		{
 		case leftSide:
-			return { cubePoint(0, 0), cubePoint(0, 48), cubePoint(2, 48 - 2), cubePoint(2, 2) };
+			return { cubePoint(0, 0), cubePointVerticalMirrored(0), cubePointVerticalMirrored(2), cubePoint(2, 2) };
 		case rightSide:
-			return { {0,0}, {0,0}, {0,0}, {0,0} };
+			return { cubePointHorizontalMirrored(0, 0), cubePointVerticalAndHorizontalMirrored(0), cubePointVerticalAndHorizontalMirrored(2), cubePointHorizontalMirrored(2, 2) };
 		case frontSide:
-			return { {0,0}, {0,0}, {0,0}, {0,0} };
+			return cubeSquareInCenter(1);
 		}
 	case 2: //size = 8
 		switch (side)
 		{
 		case leftSide:
-			return { cubePoint(2, 2), cubePoint(2, 48 - 2), cubePoint(2 + 8, 48 - 2 - 8), cubePoint(2 + 8, 2 + 8) };
+			return { cubePoint(2, 2), cubePointVerticalMirrored(2), cubePointVerticalMirrored(2 + 8), cubePoint(2 + 8, 2 + 8) };
 		case rightSide:
-			return { {0,0}, {0,0}, {0,0}, {0,0} };
+			return { cubePointHorizontalMirrored(2, 2), cubePointVerticalAndHorizontalMirrored(2), cubePointVerticalAndHorizontalMirrored(2 + 8), cubePointHorizontalMirrored(2 + 8, 2 + 8) };
 		case frontSide:
-			return { {0,0}, {0,0}, {0,0}, {0,0} };
+			return cubeSquareInCenter(1 + 1);
 		}
 	case 3: //size=6
 		switch (side)
 		{
 		case leftSide:
-			return { cubePoint(2 + 8, 2 + 8), cubePoint(10, 48 - 2 - 8), cubePoint(2 + 8 + 6, 48 - 2 - 8 - 6), cubePoint(2 + 8 + 6, 2 + 8 + 6) };
+			return { cubePoint(2 + 8, 2 + 8), cubePointVerticalMirrored(2 + 8), cubePointVerticalMirrored(2 + 8 + 6), cubePoint(2 + 8 + 6, 2 + 8 + 6) };
 		case rightSide:
-			return { {0,0}, {0,0}, {0,0}, {0,0} };
+			return { cubePointHorizontalMirrored(2 + 8, 2 + 8), cubePointVerticalAndHorizontalMirrored(2 + 8), cubePointVerticalAndHorizontalMirrored(2 + 8 + 6), cubePointHorizontalMirrored(2 + 8 + 6, 2 + 8 + 6) };
 		case frontSide:
-			return { {0,0}, {0,0}, {0,0}, {0,0} };
+			return cubeSquareInCenter(1 + 1 + 2);
 		}
 	case 4: //size=4
 		switch (side)
 		{
 		case leftSide:
-			return { cubePoint(2 + 8 + 6, 2 + 8 + 6), cubePoint(2 + 8 + 6, 48 - 2 - 8 - 6), cubePoint(2 + 8 + 6 + 4, 48 - 2 - 8 - 6 - 4), cubePoint(2 + 8 + 6 + 4, 2 + 8 + 6 + 4) };
+			return { cubePoint(2 + 8 + 6, 2 + 8 + 6), cubePointVerticalMirrored(2 + 8 + 6), cubePointVerticalMirrored(2 + 8 + 6 + 4), cubePoint(2 + 8 + 6 + 4, 2 + 8 + 6 + 4) };
 		case rightSide:
-			return { {0,0}, {0,0}, {0,0}, {0,0} };
+			return { cubePointHorizontalMirrored(2 + 8 + 6, 2 + 8 + 6), cubePointVerticalAndHorizontalMirrored(2 + 8 + 6), cubePointVerticalAndHorizontalMirrored(2 + 8 + 6 + 4), cubePointHorizontalMirrored(2 + 8 + 6 + 4, 2 + 8 + 6 + 4) };
 		case frontSide:
-			return { {0,0}, {0,0}, {0,0}, {0,0} };
+			return cubeSquareInCenter(1 + 1 + 2 + 4);
 		}
 	case 5: //size=2
 		switch (side)
 		{
 		case leftSide:
-			return { cubePoint(2 + 8 + 6 + 4, 2 + 8 + 6 + 4), cubePoint(2 + 8 + 6 + 4, 48 - 2 - 8 - 6 - 4), cubePoint(2 + 8 + 6 + 4 + 2, 48 - 2 - 8 - 6 - 4 - 2), cubePoint(2 + 8 + 6 + 4 + 2, 2 + 8 + 6 + 4 + 2) };
+			return { cubePoint(2 + 8 + 6 + 4, 2 + 8 + 6 + 4), cubePointVerticalMirrored(2 + 8 + 6 + 4), cubePointVerticalMirrored(2 + 8 + 6 + 4 + 2), cubePoint(2 + 8 + 6 + 4 + 2, 2 + 8 + 6 + 4 + 2) };
 		case rightSide:
-			return { {0,0}, {0,0}, {0,0}, {0,0} };
+			return { cubePointHorizontalMirrored(2 + 8 + 6 + 4, 2 + 8 + 6 + 4), cubePointVerticalAndHorizontalMirrored(2 + 8 + 6 + 4), cubePointVerticalAndHorizontalMirrored(2 + 8 + 6 + 4 + 2), cubePointHorizontalMirrored(2 + 8 + 6 + 4 + 2, 2 + 8 + 6 + 4 + 2) };
 		case frontSide:
-			return { {0,0}, {0,0}, {0,0}, {0,0} };
+			return cubeSquareInCenter(1 + 1 + 2 + 4 + 6);
 		}
 	case 6: //size=1
 		switch (side)
 		{
 		case leftSide:
-			return { cubePoint(2 + 8 + 6 + 4 + 2, 2 + 8 + 6 + 4 + 2), cubePoint(2 + 8 + 6 + 4 + 2, 48 - 2 - 8 - 6 - 4 - 2), cubePoint(2 + 8 + 6 + 4 + 2 + 1, 48 - 2 - 8 - 6 - 4 - 2 - 1), cubePoint(2 + 8 + 6 + 4 + 2 + 1, 2 + 8 + 6 + 4 + 2 + 1) };
+			return { cubePoint(2 + 8 + 6 + 4 + 2, 2 + 8 + 6 + 4 + 2), cubePointVerticalMirrored(2 + 8 + 6 + 4 + 2), cubePointVerticalMirrored(2 + 8 + 6 + 4 + 2 + 1), cubePoint(2 + 8 + 6 + 4 + 2 + 1, 2 + 8 + 6 + 4 + 2 + 1) };
 		case rightSide:
-			return { {0,0}, {0,0}, {0,0}, {0,0} };
+			return { cubePointHorizontalMirrored(2 + 8 + 6 + 4 + 2, 2 + 8 + 6 + 4 + 2), cubePointVerticalAndHorizontalMirrored(2 + 8 + 6 + 4 + 2), cubePointVerticalAndHorizontalMirrored(2 + 8 + 6 + 4 + 2 + 1), cubePointHorizontalMirrored(2 + 8 + 6 + 4 + 2 + 1, 2 + 8 + 6 + 4 + 2 + 1) };
 		case frontSide:
-			return { {0,0}, {0,0}, {0,0}, {0,0} };
+			return cubeSquareInCenter(1 + 1 + 2 + 4 + 6 + 8);
 		}
 	}
 }
