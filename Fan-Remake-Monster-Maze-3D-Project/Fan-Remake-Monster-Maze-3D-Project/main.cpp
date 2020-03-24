@@ -1,188 +1,140 @@
-#include <iostream>
 #include <Windows.h>
-#include <wingdi.h>
-#include <conio.h>
-#include "map.hpp"
-using namespace std;
-HANDLE thisWindowHANDLE = GetStdHandle(STD_OUTPUT_HANDLE);
-HWND thisWindowHWND = GetForegroundWindow();
-HDC thisWindowDC = GetDC(thisWindowHWND);
-#include "output.hpp"
 
-struct point
+#define WINDOW_CLASS_NAME "Monster_Maze_3D_Fan_Remake"
+
+HINSTANCE hInstanceApp;
+HWND mainWindowHWND;
+HDC mainWindowHDC;
+constexpr POINT screenSize = { 800, 500 };
+
+LOGFONT font;
+HFONT hfont;
+
+#include "menu.hpp"
+
+LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
+void Game_Init();
+void Game_Main();
+void Game_Shitdown();
+
+int APIENTRY wWinMain(HINSTANCE hInstance,
+	HINSTANCE hPrevInstance,
+	LPWSTR    lpCmdLine,
+	int       nCmdShow)
 {
-	unsigned int x, y;
-};
-point screenSize = { 32, 32};
 
-typedef enum direction {
-	N = 'N',
-	W = 'W',
-	E = 'E',
-	S = 'S'
-};
-//-N-
-//W-E
-//-S-
+	WNDCLASSEX winClass;
+	HWND hwnd;
+	MSG msg;
+	HDC hdc;
 
-direction inline turnLeft(direction rolledDirection)
-{
-	switch (rolledDirection)
-	{
-	case N: return W;
-	case W: return S;
-	case S: return E;
-	case E: return N;
-	}
-}
-direction inline turnRight(direction rolledDirection)
-{
-	switch (rolledDirection)
-	{
-	case N: return E;
-	case E: return S;
-	case S: return W;
-	case W: return N;
-	}
-}
-direction inline turnAround(direction rolledDirection)
-{
-	switch (rolledDirection)
-	{
-	case N: return E;
-	case E: return S;
-	case S: return W;
-	case W: return N;
-	}
-}
-class playerClass : public point
-{
-public:
-	direction viewDirection;
-	void makesMove()
-	{
-		//...
-	}
-}player;
-void showCompas()
-{
-	setTo(1, 1);
-	cout << '-' << player.viewDirection << '-';
-	setTo(1, 2);
-	cout << turnLeft(player.viewDirection) << '#' << turnRight(player.viewDirection);
-	setTo(1, 3);
-	cout << '-' << turnAround(player.viewDirection) << '-';
-}
-void showMap()
-{
-	setTo(1, 1);
-	cout << '-' << player.viewDirection << '-';
-	setTo(1, 2);
-	cout << turnLeft(player.viewDirection) << '#' << turnRight(player.viewDirection);
-	setTo(1, 3);
-	cout << '-' << turnAround(player.viewDirection) << '-';
-}
+	winClass.cbSize = sizeof(WNDCLASSEX);
 
-class monsterClass : public point
-{
-public:
-	point target;
-	bool seesPlayer()
-	{
-		if (player.x == monster.x)
-		{
-			for (int i = monster.x; map[i][y] != wall; i++)
-			{
-				if (player.x == i)
-				{
-					return true;
-				}
-			}
-			for (int i = monster.x; map[i][y] != wall; i--)
-			{
-				if (player.x == i)
-				{
-					return true;
-				}
-			}
-		}
-		if (player.y == monster.y)
-		{
-			for (int i = monster.y; map[x][i] != wall; i++)
-			{
-				if (player.y == i)
-				{
-					return true;
-				}
-			}
-			for (int i = monster.y; map[x][i] != wall; i++)
-			{
-				if (player.y == i)
-				{
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-	void makesMove()
-	{
-		//...
-	}
-}monster;
+	winClass.style = CS_DBLCLKS | CS_OWNDC | CS_HREDRAW | CS_VREDRAW;
+	winClass.lpfnWndProc = WndProc;
+	winClass.cbClsExtra = 0;
+	winClass.cbWndExtra = 0;
+	winClass.hInstance = hInstance;
+	winClass.hIcon = LoadIcon(NULL, IDI_APPLICATION);
+	winClass.hCursor = LoadCursor(NULL, IDC_ARROW);
+	winClass.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
+	winClass.lpszMenuName = NULL;
+	winClass.lpszClassName = WINDOW_CLASS_NAME;
+	winClass.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
 
+	hInstanceApp = hInstance;
 
-void generateGame()
-{
-	generateMap();
-	player.x = player.y = 1;
-	map[mapXSize - 2][mapYSize - 1] = door;
+	if (!RegisterClassEx(&winClass))
+		return 0;
 
-	monster.x = mapXSize / 2; monster.y = mapYSize / 2;
-	for (int i = mapYSize / 2; i != 0; i--)
-	{
-		if (map[monster.x][i] == none)
-		{
-			monster.y = i;
-			return;
-		}
-	}
-	for (int i = mapXSize / 2; i != 0; i--)
-	{
-		if (map[i][monster.y] == none)
-		{
-			monster.x = i;
-			return;
-		}
-	}
-}
+	if (!(hwnd = CreateWindowExA(NULL,
+		WINDOW_CLASS_NAME,
+		"Monster Maze 3D Fan Remake 0.1",
+		WS_OVERLAPPEDWINDOW | WS_VISIBLE,
+		0, 0, screenSize.x, screenSize.y,
+		NULL, NULL,
+		hInstance,
+		NULL)))
+		return 0;
 
+	mainWindowHWND = hwnd;
 
+	Game_Init();
 
-void debugShowMap() {
-	for (int i = 0; i < mapYSize; i++) {
-		for (int j = 0; j < mapXSize; j++)
-			switch (map[i][j]) {
-			case wall: std::cout << "0"; break;
-			case none: std::cout << " "; break;
-			}
-		std::cout << std::endl;
-	}
-	std::cout << std::endl;
-}
-
-int main(void)
-{
-	srand((unsigned)time(NULL));
-
-	trapeze({ { 0, 0 }, { 0, 200 } }, { { 40, 40 }, { 40, 160} }, grayBrush); //test
-
-	generateMap();
 	while (true)
 	{
-		
-		debugShowMap();
+		if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+		{
+			if (msg.message == WM_QUIT)
+				break;
+
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
+
+		Game_Main();
 	}
 
-	return 0;
+	Game_Shitdown();
+
+	return msg.wParam;
+}
+
+//  ЦЕЛЬ: Обрабатывает сообщения в главном окне.
+LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	PAINTSTRUCT ps;
+	HDC hdc;
+
+	switch (msg)
+	{
+	case WM_CREATE:
+		return 0;
+	case WM_PAINT:
+		hdc = BeginPaint(hWnd, &ps);
+		EndPaint(hWnd, &ps);
+		return 0;
+	case WM_DESTROY:
+		PostQuitMessage(0);
+		return 0;
+	default:
+		return DefWindowProc(hWnd, msg, wParam, lParam);
+	}
+}
+
+
+
+void Game_Init()
+{
+	font.lfHeight = 24;// Устанавливает высоту шрифта или символа
+	font.lfWidth = 12;// Устанавливает среднюю ширину символов в шрифте
+	//font.lfEscapement = 0;// Устанавливает угол, между вектором наклона и осью X устройства
+	//font.lfOrientation = 0;// Устанавливает угол, между основной линией каждого символа и осью X устройства
+	//font.lfWeight = 100;// Устанавливает толщину шрифта в диапазоне от 0 до 1000
+	//font.lfItalic = 0;// Устанавливает курсивный шрифт
+	//font.lfUnderline = 0;// Устанавливает подчеркнутый шрифт
+	//font.lfStrikeOut = 0;// Устанавливает зачеркнутый шрифт
+	//font.lfCharSet = RUSSIAN_CHARSET;// Устанавливает набор символов
+	//font.lfOutPrecision = 0;// Устанавливает точность вывода
+	//font.lfClipPrecision = 0;// Устанавливает точность отсечения
+	//font.lfQuality = 0;// Устанавливает качество вывода
+	//font.lfPitchAndFamily = 0;// Устанавливает ширину символов и семейство шрифта
+	//strcpy(font.lfFaceName, "VERDANA");//  устанавливает название шрифта
+
+	hfont = CreateFontIndirect(&font);
+}
+
+void Game_Main()
+{
+	RECT consoleWindowRect = { 0 };
+	GetWindowRect(mainWindowHWND, &consoleWindowRect);
+
+	MoveWindow(mainWindowHWND, consoleWindowRect.left, consoleWindowRect.top, screenSize.x, screenSize.y, NULL);
+	Game_Menu();
+}
+
+void Game_Shitdown()
+{
+	return;
 }
