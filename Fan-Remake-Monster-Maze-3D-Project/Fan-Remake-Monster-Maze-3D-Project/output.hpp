@@ -2,7 +2,7 @@
 
 void inline setTo(short x, short y)
 {
-	SetConsoleCursorPosition(thisWindowHANDLE, { x, y });
+	SetConsoleCursorPosition(mainWindowHWND, { x, y });
 }
 HBRUSH blackBrush = CreateSolidBrush(RGB(0, 0, 0));
 HBRUSH grayBrush = CreateSolidBrush(RGB(128, 128, 128));
@@ -11,21 +11,38 @@ struct LINE
 	POINT f;
 	POINT s;
 };
-void trapeze(LINE biggestLine, LINE smallestLine, HBRUSH& brush)
+struct VERTICAL_TRAPEZE
 {
-	HBRUSH hOldBrush = (HBRUSH)SelectObject(thisWindowDC, brush);
+	POINT biggestBaseF;
+	POINT biggestBaseS;
+	POINT smallestBaseS;
+	POINT smallestBaseF;
+};
+void trapeze(LINE biggestBase, LINE smallestBase, HBRUSH& brush)
+{
+	HBRUSH hOldBrush = (HBRUSH)SelectObject(mainWindowHDC, brush);
 	constexpr unsigned short trapezePointsCount = 4;
-	const POINT trapezePolygons[trapezePointsCount] = { biggestLine.f, smallestLine.f, smallestLine.s, biggestLine.s };
+	const POINT trapezePolygons[trapezePointsCount] = { biggestBase.f, biggestBase.s, smallestBase.s, smallestBase.f };
 
-	Polygon(thisWindowDC, trapezePolygons, trapezePointsCount);
+	Polygon(mainWindowHDC, trapezePolygons, trapezePointsCount);
 
-	SelectObject(thisWindowDC, hOldBrush);
+	SelectObject(mainWindowHDC, hOldBrush);
+}
+void trapeze(VERTICAL_TRAPEZE trapeze, HBRUSH& brush)
+{
+	HBRUSH hOldBrush = (HBRUSH)SelectObject(mainWindowHDC, brush);
+	constexpr unsigned short trapezePointsCount = 4;
+	const POINT trapezePolygons[trapezePointsCount] = { trapeze.biggestBaseF, trapeze.biggestBaseS, trapeze.smallestBaseS, trapeze.smallestBaseF };
+
+	Polygon(mainWindowHDC, trapezePolygons, trapezePointsCount);
+
+	SelectObject(mainWindowHDC, hOldBrush);
 }
 void rectangle(LINE line, HBRUSH& brush)
 {
-	HBRUSH hOldBrush = (HBRUSH)SelectObject(thisWindowDC, brush);
+	HBRUSH hOldBrush = (HBRUSH)SelectObject(mainWindowHDC, brush);
 
-	Rectangle(thisWindowDC, line.f.x, line.f.y, line.s.x, line.s.y);
+	Rectangle(mainWindowHDC, line.f.x, line.f.y, line.s.x, line.s.y);
 
-	SelectObject(thisWindowDC, hOldBrush);
+	SelectObject(mainWindowHDC, hOldBrush);
 }

@@ -4,9 +4,6 @@
 #include <conio.h>
 #include "map.hpp"
 using namespace std;
-HANDLE thisWindowHANDLE = GetStdHandle(STD_OUTPUT_HANDLE);
-HWND thisWindowHWND = GetForegroundWindow();
-HDC thisWindowDC = GetDC(thisWindowHWND);
 #include "output.hpp"
 
 typedef enum direction {
@@ -180,3 +177,125 @@ void debugShowMap() {
 //
 //	return 0;
 //}
+
+unsigned int inline cubePos(unsigned int num)
+{
+	return screenSize.y / 48 * num;
+}
+POINT inline cubeDPoint(LONG num)
+{
+	LONG temp = screenSize.y / 48 * num;
+	return { temp, temp };
+}
+POINT inline cubePoint(LONG fNum, LONG sNum)
+{
+	return { screenSize.y / 48 * fNum, screenSize.y / 48 * sNum };
+}
+typedef enum sidesEnum {
+	leftSide = 0,
+	rightSide,
+	frontSide
+};
+VERTICAL_TRAPEZE getTrapezeCoords(short range, sidesEnum side) //TODO
+{
+	switch (range)
+	{
+	case 1:
+		switch (side)
+		{
+		case leftSide:
+			return { {0,0}, {0,screenSize.y}, cubePoint(2, 46), cubePoint(2, 2) };
+		case rightSide:
+			return { {0,0}, {0,0}, {0,0}, {0,0} }; //TODO
+		case frontSide:
+			return { {0,0}, {0,0}, {0,0}, {0,0} };
+		}
+	case 2:
+		switch (side)
+		{
+		case leftSide:
+			return { {0,0}, {0,0}, {0,0}, {0,0} };
+		case rightSide:
+			return { {0,0}, {0,0}, {0,0}, {0,0} };
+		case frontSide:
+			return { {0,0}, {0,0}, {0,0}, {0,0} };
+		}
+	case 3:
+		switch (side)
+		{
+		case leftSide:
+			return { {0,0}, {0,0}, {0,0}, {0,0} };
+		case rightSide:
+			return { {0,0}, {0,0}, {0,0}, {0,0} };
+		case frontSide:
+			return { {0,0}, {0,0}, {0,0}, {0,0} };
+		}
+	case 4:
+		switch (side)
+		{
+		case leftSide:
+			return { {0,0}, {0,0}, {0,0}, {0,0} };
+		case rightSide:
+			return { {0,0}, {0,0}, {0,0}, {0,0} };
+		case frontSide:
+			return { {0,0}, {0,0}, {0,0}, {0,0} };
+		}
+	case 5:
+		switch (side)
+		{
+		case leftSide:
+			return { {0,0}, {0,0}, {0,0}, {0,0} };
+		case rightSide:
+			return { {0,0}, {0,0}, {0,0}, {0,0} };
+		case frontSide:
+			return { {0,0}, {0,0}, {0,0}, {0,0} };
+		}
+	case 6:
+		switch (side)
+		{
+		case leftSide:
+			return { {0,0}, {0,0}, {0,0}, {0,0} };
+		case rightSide:
+			return { {0,0}, {0,0}, {0,0}, {0,0} };
+		case frontSide:
+			return { {0,0}, {0,0}, {0,0}, {0,0} };
+		}
+	}
+}
+
+void showGameCanvas()
+{
+	PAINTSTRUCT ps;
+	mainWindowHDC = BeginPaint(mainWindowHWND, &ps);
+
+	trapeze(getTrapezeCoords(1, leftSide), grayBrush); //Temp Debug
+	trapeze(getTrapezeCoords(2, leftSide), grayBrush);
+	trapeze(getTrapezeCoords(3, leftSide), grayBrush);
+	trapeze(getTrapezeCoords(4, leftSide), grayBrush);
+	trapeze(getTrapezeCoords(5, leftSide), grayBrush);
+	trapeze(getTrapezeCoords(6, leftSide), grayBrush);
+
+	trapeze(getTrapezeCoords(1, rightSide), grayBrush);
+	trapeze(getTrapezeCoords(2, rightSide), grayBrush);
+	trapeze(getTrapezeCoords(3, rightSide), grayBrush);
+	trapeze(getTrapezeCoords(4, rightSide), grayBrush);
+	trapeze(getTrapezeCoords(5, rightSide), grayBrush);
+	trapeze(getTrapezeCoords(6, rightSide), grayBrush);
+
+	trapeze(getTrapezeCoords(1, frontSide), grayBrush);
+	trapeze(getTrapezeCoords(2, frontSide), grayBrush);
+	trapeze(getTrapezeCoords(3, frontSide), grayBrush);
+	trapeze(getTrapezeCoords(4, frontSide), grayBrush);
+	trapeze(getTrapezeCoords(5, frontSide), grayBrush);
+	trapeze(getTrapezeCoords(6, frontSide), grayBrush);
+
+	EndPaint(mainWindowHWND, &ps);
+}
+
+void Game_Tick()
+{
+	while (true)
+	{
+		showGameCanvas(); //Temp Debug
+	}
+}

@@ -3,6 +3,8 @@
 
 void Game_Menu()
 {
+	Game_Tick(); //Temp Debug
+
 	PAINTSTRUCT ps;
 	mainWindowHDC = BeginPaint(mainWindowHWND, &ps);
 
