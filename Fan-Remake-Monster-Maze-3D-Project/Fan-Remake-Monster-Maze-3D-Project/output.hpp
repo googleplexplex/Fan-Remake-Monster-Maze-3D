@@ -5,7 +5,8 @@ void inline setTo(short x, short y)
 	SetConsoleCursorPosition(mainWindowHWND, { x, y });
 }
 HBRUSH blackBrush = CreateSolidBrush(RGB(0, 0, 0));
-HBRUSH grayBrush = CreateSolidBrush(RGB(128, 128, 128));
+HBRUSH wallBrush = CreateSolidBrush(RGB(169, 169, 169));
+HBRUSH noneBrush = CreateSolidBrush(RGB(128, 128, 128));
 struct LINE
 {
 	POINT f;

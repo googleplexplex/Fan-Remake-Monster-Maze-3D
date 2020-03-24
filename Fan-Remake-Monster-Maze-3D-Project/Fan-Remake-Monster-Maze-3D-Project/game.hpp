@@ -154,29 +154,23 @@ void debugShowMap() {
 	for (int i = 0; i < mapYSize; i++) {
 		for (int j = 0; j < mapXSize; j++)
 			switch (map[i][j]) {
-			case wall: std::cout << "0"; break;
+			case wall: std::cout << "1"; break;
 			case none: std::cout << " "; break;
 			}
 		std::cout << std::endl;
 	}
 	std::cout << std::endl;
+
+	setTo(player.x, player.y);
+	switch (player.viewDirection)
+	{
+	case N: cout << '^'; break;
+	case W: cout << '<'; break;
+	case E: cout << '>'; break;
+	case S: cout << 'v'; break;
+	}
 }
 
-//int main(void)
-//{
-//	srand((unsigned)time(NULL));
-//
-//	trapeze({ { 0, 0 }, { 0, 200 } }, { { 40, 40 }, { 40, 160} }, grayBrush); //test
-//
-//	generateMap();
-//	while (true)
-//	{
-//
-//		debugShowMap();
-//	}
-//
-//	return 0;
-//}
 
 POINT inline cubeDPoint(LONG num)
 {
@@ -213,6 +207,7 @@ typedef enum sidesEnum {
 	rightSide,
 	frontSide
 };
+unsigned short wall2DSizes[6] = { 2, 8, 6, 4, 2, 1 };
 VERTICAL_TRAPEZE getTrapezeCoords(short range, sidesEnum side) //TODO
 {
 	switch (range)
@@ -279,32 +274,45 @@ VERTICAL_TRAPEZE getTrapezeCoords(short range, sidesEnum side) //TODO
 		}
 	}
 }
+void inline showWall(short range, sidesEnum side)
+{
+	trapeze(getTrapezeCoords(range, side), wallBrush);
+}
+unsigned short cubePos(unsigned short sizeInBlocks)
+{
+	return screenSize.y / 48 * sizeInBlocks - 1;
+}
+void inline showNone(short range, sidesEnum side) //TODO
+{
+	VERTICAL_TRAPEZE wallPrototype = getTrapezeCoords(range, side);
+	trapeze(getTrapezeCoords(range, side), noneBrush);
+}
 
 void showGameCanvas()
 {
 	PAINTSTRUCT ps;
 	mainWindowHDC = BeginPaint(mainWindowHWND, &ps);
 
-	trapeze(getTrapezeCoords(1, leftSide), grayBrush); //Temp Debug
-	trapeze(getTrapezeCoords(2, leftSide), grayBrush);
-	trapeze(getTrapezeCoords(3, leftSide), grayBrush);
-	trapeze(getTrapezeCoords(4, leftSide), grayBrush);
-	trapeze(getTrapezeCoords(5, leftSide), grayBrush);
-	trapeze(getTrapezeCoords(6, leftSide), grayBrush);
+	showWall(1, leftSide);
+	showNone(2, leftSide);
+	showWall(3, leftSide);
+	showNone(4, leftSide);
+	showWall(5, leftSide);
+	showNone(6, leftSide);
 
-	trapeze(getTrapezeCoords(1, rightSide), grayBrush);
-	trapeze(getTrapezeCoords(2, rightSide), grayBrush);
-	trapeze(getTrapezeCoords(3, rightSide), grayBrush);
-	trapeze(getTrapezeCoords(4, rightSide), grayBrush);
-	trapeze(getTrapezeCoords(5, rightSide), grayBrush);
-	trapeze(getTrapezeCoords(6, rightSide), grayBrush);
+	showWall(1, rightSide);
+	showWall(2, rightSide);
+	showWall(3, rightSide);
+	showWall(4, rightSide);
+	showWall(5, rightSide);
+	showWall(6, rightSide);
 
-	trapeze(getTrapezeCoords(1, frontSide), grayBrush);
-	trapeze(getTrapezeCoords(2, frontSide), grayBrush);
-	trapeze(getTrapezeCoords(3, frontSide), grayBrush);
-	trapeze(getTrapezeCoords(4, frontSide), grayBrush);
-	trapeze(getTrapezeCoords(5, frontSide), grayBrush);
-	trapeze(getTrapezeCoords(6, frontSide), grayBrush);
+	showWall(1, frontSide);
+	showWall(2, frontSide);
+	showWall(3, frontSide);
+	showWall(4, frontSide);
+	showWall(5, frontSide);
+	showWall(6, frontSide);
 
 	EndPaint(mainWindowHWND, &ps);
 }
