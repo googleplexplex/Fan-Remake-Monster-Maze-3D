@@ -39,11 +39,11 @@ void trapeze(VERTICAL_TRAPEZE trapeze, HBRUSH& brush)
 
 	SelectObject(mainWindowHDC, hOldBrush);
 }
-void rectangle(LINE line, HBRUSH& brush)
+void rectangle(POINT f, POINT s, HBRUSH& brush)
 {
 	HBRUSH hOldBrush = (HBRUSH)SelectObject(mainWindowHDC, brush);
 
-	Rectangle(mainWindowHDC, line.f.x, line.f.y, line.s.x, line.s.y);
+	Rectangle(mainWindowHDC, f.x, f.y, s.x, s.y);
 
 	SelectObject(mainWindowHDC, hOldBrush);
 }

@@ -172,7 +172,7 @@ void debugShowMap() {
 }
 
 
-POINT inline cubeDPoint(LONG num)
+POINT inline cubeDPoint(LONG num) //TODOC
 {
 	LONG temp = screenSize.y / 48 * num;
 	return { temp, temp };
@@ -208,7 +208,7 @@ typedef enum sidesEnum {
 	frontSide
 };
 unsigned short wall2DSizes[6] = { 2, 8, 6, 4, 2, 1 };
-VERTICAL_TRAPEZE getTrapezeCoords(short range, sidesEnum side) //TODO
+VERTICAL_TRAPEZE getTrapezeCoords(short range, sidesEnum side) //TOFIX
 {
 	switch (range)
 	{
@@ -282,10 +282,28 @@ unsigned short cubePos(unsigned short sizeInBlocks)
 {
 	return screenSize.y / 48 * sizeInBlocks - 1;
 }
-void inline showNone(short range, sidesEnum side) //TODO
+void inline showNone(short range, sidesEnum side)
 {
 	VERTICAL_TRAPEZE wallPrototype = getTrapezeCoords(range, side);
-	trapeze(getTrapezeCoords(range, side), noneBrush);
+	wallPrototype.biggestBaseF.y = wallPrototype.smallestBaseF.y;
+	wallPrototype.biggestBaseS.y = wallPrototype.smallestBaseS.y;
+	trapeze(wallPrototype, noneBrush);
+}
+void inline showMonster(short range) //TOFIX
+{
+	VERTICAL_TRAPEZE wallPrototype = getTrapezeCoords(range, frontSide);
+	HBRUSH monsterBrush = CreateSolidBrush(RGB(255, 0, 0));
+	wallPrototype.biggestBaseF.y = wallPrototype.smallestBaseF.y;
+	wallPrototype.biggestBaseS.y = wallPrototype.smallestBaseS.y;
+	trapeze(wallPrototype, monsterBrush);
+}
+void inline showDoor(short range) //TOFIX
+{
+	VERTICAL_TRAPEZE wallPrototype = getTrapezeCoords(range, frontSide);
+	HBRUSH monsterBrush = CreateSolidBrush(RGB(0, 255, 0));
+	wallPrototype.biggestBaseF.y = wallPrototype.smallestBaseF.y;
+	wallPrototype.biggestBaseS.y = wallPrototype.smallestBaseS.y;
+	trapeze(wallPrototype, monsterBrush);
 }
 
 void showGameCanvas()
@@ -301,15 +319,15 @@ void showGameCanvas()
 	showNone(6, leftSide);
 
 	showWall(1, rightSide);
-	showWall(2, rightSide);
+	showNone(2, rightSide);
 	showWall(3, rightSide);
-	showWall(4, rightSide);
+	showNone(4, rightSide);
 	showWall(5, rightSide);
-	showWall(6, rightSide);
+	showNone(6, rightSide);
 
 	showWall(1, frontSide);
-	showWall(2, frontSide);
-	showWall(3, frontSide);
+	showMonster(2);
+	showDoor(3);
 	showWall(4, frontSide);
 	showWall(5, frontSide);
 	showWall(6, frontSide);
