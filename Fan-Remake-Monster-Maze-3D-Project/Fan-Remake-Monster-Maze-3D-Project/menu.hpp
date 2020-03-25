@@ -3,7 +3,7 @@
 
 void Game_Menu()
 {
-	Game_Tick(); //Temp Debug
+	Game_Game(); //Temp Debug
 
 	PAINTSTRUCT ps;
 	mainWindowHDC = BeginPaint(mainWindowHWND, &ps);
@@ -15,4 +15,32 @@ void Game_Menu()
 	SelectObject(mainWindowHDC, oldFont);
 
 	EndPaint(mainWindowHWND, &ps);
+}
+
+void Game_Game()
+{
+	gameState presentGameState = inProcess;
+	while (Game_Tick() == inProcess);
+	{
+		presentGameState = Game_Tick();
+	}
+	switch (presentGameState)
+	{
+	case win:
+		Game_Win();
+		break;
+	case lose:
+		Game_GameOver();
+		break;
+	}
+}
+
+void Game_GameOver() //TODO
+{
+
+}
+
+void Game_Win() //TODO
+{
+
 }

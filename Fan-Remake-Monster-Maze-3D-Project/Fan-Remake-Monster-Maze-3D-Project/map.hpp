@@ -9,6 +9,7 @@ typedef enum block {
 constexpr unsigned int mapXSize = 25;
 constexpr unsigned int mapYSize = 25;
 block map[mapXSize][mapYSize];
+constexpr POINT doorPos = { mapXSize - 2, mapYSize - 1 };
 
 bool deadEnd(int x, int y) {
 	int a = 0;

@@ -1,10 +1,12 @@
 #pragma once
 #include <iostream>
 #include <wingdi.h>
+#include <time.h>
 #include <conio.h>
 #include "map.hpp"
 using namespace std;
 #include "output.hpp"
+#define pointsEqual(f, s) (((f).x == (s).x) && ((f).y == (s).y))
 
 typedef enum direction {
 	N = 'N',
@@ -16,7 +18,7 @@ typedef enum direction {
 //W-E
 //-S-
 
-direction inline turnLeft(direction rolledDirection)
+direction inline turnDirectionLeft(direction rolledDirection)
 {
 	switch (rolledDirection)
 	{
@@ -26,7 +28,7 @@ direction inline turnLeft(direction rolledDirection)
 	case E: return N;
 	}
 }
-direction inline turnRight(direction rolledDirection)
+direction inline turnDirectionRight(direction rolledDirection)
 {
 	switch (rolledDirection)
 	{
@@ -36,7 +38,7 @@ direction inline turnRight(direction rolledDirection)
 	case W: return N;
 	}
 }
-direction inline turnAround(direction rolledDirection)
+direction inline turnDirectionAround(direction rolledDirection)
 {
 	switch (rolledDirection)
 	{
@@ -46,13 +48,42 @@ direction inline turnAround(direction rolledDirection)
 	case W: return N;
 	}
 }
-class playerClass : public POINT
+class playerClass
 {
 public:
+	POINT pos;
 	direction viewDirection;
-	void makesMove()
+	void moveForward()
 	{
-		//...
+		POINT goTo = pos;
+		switch (viewDirection)
+		{
+		case N: goTo.y--; break;
+		case W: goTo.x--; break;
+		case E: goTo.x++; break;
+		case S: goTo.y++; break;
+		}
+
+		if (map[goTo.x][goTo.y] != wall)
+		{
+			pos = goTo;
+		}
+	}
+	void inline turnLeft()
+	{
+		viewDirection = turnDirectionLeft(viewDirection);
+	}
+	void inline turnRight()
+	{
+		viewDirection = turnDirectionRight(viewDirection);
+	}
+	void inline turnAround()
+	{
+		viewDirection = turnDirectionAround(viewDirection);
+	}
+	bool inDoor()
+	{
+		return pointsEqual(pos, doorPos);
 	}
 }player;
 void showCompas()
@@ -60,55 +91,56 @@ void showCompas()
 	setTo(1, 1);
 	cout << '-' << player.viewDirection << '-';
 	setTo(1, 2);
-	cout << turnLeft(player.viewDirection) << '#' << turnRight(player.viewDirection);
+	cout << turnDirectionLeft(player.viewDirection) << '#' << turnDirectionRight(player.viewDirection);
 	setTo(1, 3);
-	cout << '-' << turnAround(player.viewDirection) << '-';
+	cout << '-' << turnDirectionAround(player.viewDirection) << '-';
 }
 void showMap()
 {
 	setTo(1, 1);
 	cout << '-' << player.viewDirection << '-';
 	setTo(1, 2);
-	cout << turnLeft(player.viewDirection) << '#' << turnRight(player.viewDirection);
+	cout << turnDirectionLeft(player.viewDirection) << '#' << turnDirectionRight(player.viewDirection);
 	setTo(1, 3);
-	cout << '-' << turnAround(player.viewDirection) << '-';
+	cout << '-' << turnDirectionAround(player.viewDirection) << '-';
 }
 
-class monsterClass : public POINT
+class monsterClass
 {
 public:
+	POINT pos;
 	POINT target;
 	bool seesPlayer()
 	{
-		if (player.x == monster.x)
+		if (player.pos.x == monster.pos.x)
 		{
-			for (int i = monster.x; map[i][y] != wall; i++)
+			for (int i = monster.pos.x; map[i][pos.y] != wall; i++)
 			{
-				if (player.x == i)
+				if (player.pos.x == i)
 				{
 					return true;
 				}
 			}
-			for (int i = monster.x; map[i][y] != wall; i--)
+			for (int i = monster.pos.x; map[i][pos.y] != wall; i--)
 			{
-				if (player.x == i)
+				if (player.pos.x == i)
 				{
 					return true;
 				}
 			}
 		}
-		if (player.y == monster.y)
+		if (player.pos.y == monster.pos.y)
 		{
-			for (int i = monster.y; map[x][i] != wall; i++)
+			for (int i = monster.pos.y; map[pos.x][i] != wall; i++)
 			{
-				if (player.y == i)
+				if (player.pos.y == i)
 				{
 					return true;
 				}
 			}
-			for (int i = monster.y; map[x][i] != wall; i++)
+			for (int i = monster.pos.y; map[pos.x][i] != wall; i++)
 			{
-				if (player.y == i)
+				if (player.pos.y == i)
 				{
 					return true;
 				}
@@ -116,9 +148,73 @@ public:
 		}
 		return false;
 	}
-	void makesMove()
+	void setRandomTarget()
 	{
-		//...
+		start:
+		switch (rand() % 4)
+		{
+		case 0:
+			for (int i = monster.pos.x; ; i++)
+			{
+				if (map[i][pos.y] == wall)
+				{
+					target.x = i - 1;
+				}
+			}
+		case 1:
+			for (int i = monster.pos.x; ; i--)
+			{
+				if (map[i][pos.y] == wall)
+				{
+					target.x = i + 1;
+				}
+			}
+		case 2:
+			for (int i = monster.pos.y; ; i++)
+			{
+				if (map[pos.x][i] == wall)
+				{
+					target.y = i - 1;
+				}
+			}
+		case 3:
+			for (int i = monster.pos.y; ; i--)
+			{
+				if (map[pos.x][i] == wall)
+				{
+					target.y = i + 1;
+				}
+			}
+		}
+		if (pointsEqual(pos, target))
+			goto start;
+	}
+	void moveToTarget()
+	{
+		if (pos.x == target.x && pos.y > target.y)
+			pos.y--;
+		else if (pos.x == target.x && pos.y < target.y)
+			pos.y++;
+		else if (pos.x > target.x && pos.y == target.y)
+			pos.x--;
+		else if (pos.x < target.x && pos.y == target.y)
+			pos.x++;
+	}
+	void alifeTick()
+	{
+		bool seePlayer = seesPlayer();
+		bool monsterInTarget = pointsEqual(pos, target);
+
+		if (seePlayer)
+			target = player.pos;
+		else if (monsterInTarget)
+			setRandomTarget();
+
+		moveToTarget();
+	}
+	bool inline catchPlayer()
+	{
+		return (abs(monster.pos.x - player.pos.x) == 1 || abs(monster.pos.y - player.pos.y) == 1);
 	}
 }monster;
 
@@ -126,26 +222,27 @@ public:
 void generateGame()
 {
 	generateMap();
-	player.x = player.y = 1;
+	player.pos.x = player.pos.y = 1;
 	map[mapXSize - 2][mapYSize - 1] = door;
 
-	monster.x = mapXSize / 2; monster.y = mapYSize / 2;
+	monster.pos.x = mapXSize / 2; monster.pos.y = mapYSize / 2;
 	for (int i = mapYSize / 2; i != 0; i--)
 	{
-		if (map[monster.x][i] == none)
+		if (map[monster.pos.x][i] == none)
 		{
-			monster.y = i;
+			monster.pos.y = i;
 			return;
 		}
 	}
 	for (int i = mapXSize / 2; i != 0; i--)
 	{
-		if (map[i][monster.y] == none)
+		if (map[i][monster.pos.y] == none)
 		{
-			monster.x = i;
+			monster.pos.x = i;
 			return;
 		}
 	}
+	monster.setRandomTarget();
 }
 
 
@@ -161,7 +258,7 @@ void debugShowMap() {
 	}
 	std::cout << std::endl;
 
-	setTo(player.x, player.y);
+	setTo(player.pos.x, player.pos.y);
 	switch (player.viewDirection)
 	{
 	case N: cout << '^'; break;
@@ -208,71 +305,31 @@ typedef enum sidesEnum {
 	frontSide
 };
 unsigned short wall2DSizes[6] = { 2, 8, 6, 4, 2, 1 };
-VERTICAL_TRAPEZE getTrapezeCoords(short range, sidesEnum side) //TOFIX
+unsigned short factorialSizes2DWalls[7] = { 0, 2, 2 + 8, 2 + 8 + 6, 2 + 8 + 6 + 4, 2 + 8 + 6 + 4 + 2, 2 + 8 + 6 + 4 + 2 + 1 };
+VERTICAL_TRAPEZE getTrapezeCoords(short range, sidesEnum side)
 {
-	switch (range)
+	if (side == frontSide)
 	{
-	case 1://size = 2
-		switch (side)
+		switch (range) //TOFIX
 		{
-		case leftSide:
-			return { cubePoint(0, 0), cubePointVerticalMirrored(0), cubePointVerticalMirrored(2), cubePoint(2, 2) };
-		case rightSide:
-			return { cubePointHorizontalMirrored(0, 0), cubePointVerticalAndHorizontalMirrored(0), cubePointVerticalAndHorizontalMirrored(2), cubePointHorizontalMirrored(2, 2) };
-		case frontSide:
-			return cubeSquareInCenter(1);
-		}
-	case 2: //size = 8
-		switch (side)
-		{
-		case leftSide:
-			return { cubePoint(2, 2), cubePointVerticalMirrored(2), cubePointVerticalMirrored(2 + 8), cubePoint(2 + 8, 2 + 8) };
-		case rightSide:
-			return { cubePointHorizontalMirrored(2, 2), cubePointVerticalAndHorizontalMirrored(2), cubePointVerticalAndHorizontalMirrored(2 + 8), cubePointHorizontalMirrored(2 + 8, 2 + 8) };
-		case frontSide:
-			return cubeSquareInCenter(1 + 1);
-		}
-	case 3: //size=6
-		switch (side)
-		{
-		case leftSide:
-			return { cubePoint(2 + 8, 2 + 8), cubePointVerticalMirrored(2 + 8), cubePointVerticalMirrored(2 + 8 + 6), cubePoint(2 + 8 + 6, 2 + 8 + 6) };
-		case rightSide:
-			return { cubePointHorizontalMirrored(2 + 8, 2 + 8), cubePointVerticalAndHorizontalMirrored(2 + 8), cubePointVerticalAndHorizontalMirrored(2 + 8 + 6), cubePointHorizontalMirrored(2 + 8 + 6, 2 + 8 + 6) };
-		case frontSide:
-			return cubeSquareInCenter(1 + 1 + 2);
-		}
-	case 4: //size=4
-		switch (side)
-		{
-		case leftSide:
-			return { cubePoint(2 + 8 + 6, 2 + 8 + 6), cubePointVerticalMirrored(2 + 8 + 6), cubePointVerticalMirrored(2 + 8 + 6 + 4), cubePoint(2 + 8 + 6 + 4, 2 + 8 + 6 + 4) };
-		case rightSide:
-			return { cubePointHorizontalMirrored(2 + 8 + 6, 2 + 8 + 6), cubePointVerticalAndHorizontalMirrored(2 + 8 + 6), cubePointVerticalAndHorizontalMirrored(2 + 8 + 6 + 4), cubePointHorizontalMirrored(2 + 8 + 6 + 4, 2 + 8 + 6 + 4) };
-		case frontSide:
-			return cubeSquareInCenter(1 + 1 + 2 + 4);
-		}
-	case 5: //size=2
-		switch (side)
-		{
-		case leftSide:
-			return { cubePoint(2 + 8 + 6 + 4, 2 + 8 + 6 + 4), cubePointVerticalMirrored(2 + 8 + 6 + 4), cubePointVerticalMirrored(2 + 8 + 6 + 4 + 2), cubePoint(2 + 8 + 6 + 4 + 2, 2 + 8 + 6 + 4 + 2) };
-		case rightSide:
-			return { cubePointHorizontalMirrored(2 + 8 + 6 + 4, 2 + 8 + 6 + 4), cubePointVerticalAndHorizontalMirrored(2 + 8 + 6 + 4), cubePointVerticalAndHorizontalMirrored(2 + 8 + 6 + 4 + 2), cubePointHorizontalMirrored(2 + 8 + 6 + 4 + 2, 2 + 8 + 6 + 4 + 2) };
-		case frontSide:
-			return cubeSquareInCenter(1 + 1 + 2 + 4 + 6);
-		}
-	case 6: //size=1
-		switch (side)
-		{
-		case leftSide:
-			return { cubePoint(2 + 8 + 6 + 4 + 2, 2 + 8 + 6 + 4 + 2), cubePointVerticalMirrored(2 + 8 + 6 + 4 + 2), cubePointVerticalMirrored(2 + 8 + 6 + 4 + 2 + 1), cubePoint(2 + 8 + 6 + 4 + 2 + 1, 2 + 8 + 6 + 4 + 2 + 1) };
-		case rightSide:
-			return { cubePointHorizontalMirrored(2 + 8 + 6 + 4 + 2, 2 + 8 + 6 + 4 + 2), cubePointVerticalAndHorizontalMirrored(2 + 8 + 6 + 4 + 2), cubePointVerticalAndHorizontalMirrored(2 + 8 + 6 + 4 + 2 + 1), cubePointHorizontalMirrored(2 + 8 + 6 + 4 + 2 + 1, 2 + 8 + 6 + 4 + 2 + 1) };
-		case frontSide:
-			return cubeSquareInCenter(1 + 1 + 2 + 4 + 6 + 8);
+		case 1:
+			return cubeSquareInCenter(1); //1
+		case 2:
+			return cubeSquareInCenter(1 + 1); //2
+		case 3:
+			return cubeSquareInCenter(1 + 1 + 2); //4
+		case 4:
+			return cubeSquareInCenter(1 + 1 + 2 + 4); //8
+		case 5:
+			return cubeSquareInCenter(1 + 1 + 2 + 4 + 6); //14
+		case 6:
+			return cubeSquareInCenter(1 + 1 + 2 + 4 + 6 + 8); //22
 		}
 	}
+	else if (side == leftSide)
+		return { cubePoint(factorialSizes2DWalls[range - 1], factorialSizes2DWalls[range - 1]), cubePointVerticalMirrored(factorialSizes2DWalls[range - 1]), cubePointVerticalMirrored(factorialSizes2DWalls[range]), cubePoint(factorialSizes2DWalls[range], factorialSizes2DWalls[range]) };
+	else if (side == rightSide)
+		return { cubePointHorizontalMirrored(factorialSizes2DWalls[range - 1], factorialSizes2DWalls[range - 1]), cubePointVerticalAndHorizontalMirrored(factorialSizes2DWalls[range - 1]), cubePointVerticalAndHorizontalMirrored(factorialSizes2DWalls[range]), cubePointHorizontalMirrored(factorialSizes2DWalls[range], factorialSizes2DWalls[range]) };
 }
 void inline showWall(short range, sidesEnum side)
 {
@@ -300,10 +357,10 @@ void inline showMonster(short range) //TOFIX
 void inline showDoor(short range) //TOFIX
 {
 	VERTICAL_TRAPEZE wallPrototype = getTrapezeCoords(range, frontSide);
-	HBRUSH monsterBrush = CreateSolidBrush(RGB(0, 255, 0));
+	HBRUSH doorBrush = CreateSolidBrush(RGB(0, 255, 0));
 	wallPrototype.biggestBaseF.y = wallPrototype.smallestBaseF.y;
 	wallPrototype.biggestBaseS.y = wallPrototype.smallestBaseS.y;
-	trapeze(wallPrototype, monsterBrush);
+	trapeze(wallPrototype, doorBrush);
 }
 
 void showGameCanvas()
@@ -335,10 +392,48 @@ void showGameCanvas()
 	EndPaint(mainWindowHWND, &ps);
 }
 
-void Game_Tick()
+typedef enum gameState
 {
-	while (true)
+	win = 0,
+	lose,
+	inProcess
+};
+gameState Game_Tick()
+{
+	for (int i = 0; i < 20; i++, Sleep(1000 / 50))
 	{
-		showGameCanvas(); //Temp Debug
+		if (bool(kbhit()))
+		{
+			char pressedKey = getch();
+			switch (pressedKey)
+			{
+			case 'W':
+			case 'w':
+				player.moveForward();
+				break;
+			case 'Q':
+			case 'q':
+				player.turnLeft();
+				break;
+			case 'E':
+			case 'e':
+				player.turnRight();
+				break;
+			case 'S':
+			case 's':
+				player.turnAround();
+				break;
+			}
+			showGameCanvas();
+			if (monster.catchPlayer())
+				return lose;
+			if (player.inDoor())
+				return win;
+		}
 	}
+	monster.alifeTick();
+	showGameCanvas();
+	if (monster.catchPlayer())
+		return lose;
+	return inProcess;
 }
