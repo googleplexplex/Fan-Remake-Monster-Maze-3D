@@ -1,6 +1,30 @@
 #pragma once
 #include "game.hpp"
 
+void Game_GameOver() //TODO
+{
+
+}
+
+void Game_Win() //TODO
+{
+
+}
+
+void Game_Game()
+{
+	generateGame();
+	gameState presentGameState = inProcess;
+	while (presentGameState == inProcess)
+	{
+		presentGameState = Game_Tick();
+	}
+	if(presentGameState == win)
+		Game_Win();
+	else if(presentGameState == lose)
+		Game_GameOver();
+}
+
 void Game_Menu()
 {
 	Game_Game(); //Temp Debug
@@ -15,32 +39,4 @@ void Game_Menu()
 	SelectObject(mainWindowHDC, oldFont);
 
 	EndPaint(mainWindowHWND, &ps);
-}
-
-void Game_Game()
-{
-	gameState presentGameState = inProcess;
-	while (Game_Tick() == inProcess);
-	{
-		presentGameState = Game_Tick();
-	}
-	switch (presentGameState)
-	{
-	case win:
-		Game_Win();
-		break;
-	case lose:
-		Game_GameOver();
-		break;
-	}
-}
-
-void Game_GameOver() //TODO
-{
-
-}
-
-void Game_Win() //TODO
-{
-
 }

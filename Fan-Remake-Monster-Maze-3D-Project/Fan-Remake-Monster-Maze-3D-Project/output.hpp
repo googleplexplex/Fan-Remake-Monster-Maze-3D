@@ -19,16 +19,6 @@ struct VERTICAL_TRAPEZE
 	POINT smallestBaseS;
 	POINT smallestBaseF;
 };
-void trapeze(LINE biggestBase, LINE smallestBase, HBRUSH& brush)
-{
-	HBRUSH hOldBrush = (HBRUSH)SelectObject(mainWindowHDC, brush);
-	constexpr unsigned short trapezePointsCount = 4;
-	const POINT trapezePolygons[trapezePointsCount] = { biggestBase.f, biggestBase.s, smallestBase.s, smallestBase.f };
-
-	Polygon(mainWindowHDC, trapezePolygons, trapezePointsCount);
-
-	SelectObject(mainWindowHDC, hOldBrush);
-}
 void trapeze(VERTICAL_TRAPEZE trapeze, HBRUSH& brush)
 {
 	HBRUSH hOldBrush = (HBRUSH)SelectObject(mainWindowHDC, brush);
@@ -46,4 +36,10 @@ void rectangle(POINT f, POINT s, HBRUSH& brush)
 	Rectangle(mainWindowHDC, f.x, f.y, s.x, s.y);
 
 	SelectObject(mainWindowHDC, hOldBrush);
+}
+void eriseWindow()
+{
+	RECT rect;
+	GetClientRect(mainWindowHWND, &rect);
+	FillRect(mainWindowHDC, &rect, (HBRUSH)(COLOR_WINDOW + 1));
 }

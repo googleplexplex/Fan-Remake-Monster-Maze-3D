@@ -9,6 +9,7 @@ using namespace std;
 #define pointsEqual(f, s) (((f).x == (s).x) && ((f).y == (s).y))
 
 typedef enum direction {
+	null = 0,
 	N = 'N',
 	W = 'W',
 	E = 'E',
@@ -109,8 +110,8 @@ class monsterClass
 {
 public:
 	POINT pos;
-	POINT target;
-	bool seesPlayer()
+	direction target;
+	direction seesPlayer() //return null, if false, direction if true
 	{
 		if (player.pos.x == monster.pos.x)
 		{
@@ -118,14 +119,14 @@ public:
 			{
 				if (player.pos.x == i)
 				{
-					return true;
+					return E;
 				}
 			}
 			for (int i = monster.pos.x; map[i][pos.y] != wall; i--)
 			{
 				if (player.pos.x == i)
 				{
-					return true;
+					return W;
 				}
 			}
 		}
@@ -135,18 +136,28 @@ public:
 			{
 				if (player.pos.y == i)
 				{
-					return true;
+					return S;
 				}
 			}
-			for (int i = monster.pos.y; map[pos.x][i] != wall; i++)
+			for (int i = monster.pos.y; map[pos.x][i] != wall; i--)
 			{
 				if (player.pos.y == i)
 				{
-					return true;
+					return N;
 				}
 			}
 		}
-		return false;
+		return null;
+	}
+	bool monsterInTarget()
+	{
+		switch (target)
+		{
+		case N: return (map[pos.x][pos.y - 1] == wall);
+		case W: return (map[pos.x - 1][pos.y] == wall);
+		case E: return (map[pos.x + 1][pos.y - 1] == wall);
+		case S: return (map[pos.x][pos.y + 1] == wall);
+		}
 	}
 	void setRandomTarget()
 	{
@@ -154,60 +165,34 @@ public:
 		switch (rand() % 4)
 		{
 		case 0:
-			for (int i = monster.pos.x; ; i++)
-			{
-				if (map[i][pos.y] == wall)
-				{
-					target.x = i - 1;
-				}
-			}
+			target = W; break;
 		case 1:
-			for (int i = monster.pos.x; ; i--)
-			{
-				if (map[i][pos.y] == wall)
-				{
-					target.x = i + 1;
-				}
-			}
+			target = N; break;
 		case 2:
-			for (int i = monster.pos.y; ; i++)
-			{
-				if (map[pos.x][i] == wall)
-				{
-					target.y = i - 1;
-				}
-			}
+			target = E; break;
 		case 3:
-			for (int i = monster.pos.y; ; i--)
-			{
-				if (map[pos.x][i] == wall)
-				{
-					target.y = i + 1;
-				}
-			}
+			target = S; break;
 		}
-		if (pointsEqual(pos, target))
+		if (monsterInTarget())
 			goto start;
 	}
 	void moveToTarget()
 	{
-		if (pos.x == target.x && pos.y > target.y)
-			pos.y--;
-		else if (pos.x == target.x && pos.y < target.y)
-			pos.y++;
-		else if (pos.x > target.x && pos.y == target.y)
-			pos.x--;
-		else if (pos.x < target.x && pos.y == target.y)
-			pos.x++;
+		switch (target)
+		{
+		case N: pos.y--; break;
+		case W: pos.x--; break;
+		case E: pos.x++; break;
+		case S: pos.y++; break;
+		}
 	}
 	void alifeTick()
 	{
-		bool seePlayer = seesPlayer();
-		bool monsterInTarget = pointsEqual(pos, target);
+		direction seePlayer = seesPlayer();
 
-		if (seePlayer)
-			target = player.pos;
-		else if (monsterInTarget)
+		if (seePlayer != null)
+			target = seePlayer;
+		else if (monsterInTarget())
 			setRandomTarget();
 
 		moveToTarget();
@@ -226,6 +211,7 @@ void generateGame()
 	map[mapXSize - 2][mapYSize - 1] = door;
 
 	monster.pos.x = mapXSize / 2; monster.pos.y = mapYSize / 2;
+	monster.setRandomTarget();
 	for (int i = mapYSize / 2; i != 0; i--)
 	{
 		if (map[monster.pos.x][i] == none)
@@ -241,30 +227,6 @@ void generateGame()
 			monster.pos.x = i;
 			return;
 		}
-	}
-	monster.setRandomTarget();
-}
-
-
-
-void debugShowMap() {
-	for (int i = 0; i < mapYSize; i++) {
-		for (int j = 0; j < mapXSize; j++)
-			switch (map[i][j]) {
-			case wall: std::cout << "1"; break;
-			case none: std::cout << " "; break;
-			}
-		std::cout << std::endl;
-	}
-	std::cout << std::endl;
-
-	setTo(player.pos.x, player.pos.y);
-	switch (player.viewDirection)
-	{
-	case N: cout << '^'; break;
-	case W: cout << '<'; break;
-	case E: cout << '>'; break;
-	case S: cout << 'v'; break;
 	}
 }
 
@@ -362,13 +324,59 @@ void inline showDoor(short range) //TOFIX
 	wallPrototype.biggestBaseS.y = wallPrototype.smallestBaseS.y;
 	trapeze(wallPrototype, doorBrush);
 }
+//debug zone
+void inline showCube(unsigned int x, unsigned int y)
+{
+	Rectangle(mainWindowHDC, cubePos(x), cubePos(y), cubePos(x + 1), cubePos(y + 1));
+}
+void inline showCube(unsigned int x, unsigned int y, COLORREF color)
+{
+	HBRUSH oldBrush = (HBRUSH)SelectObject(mainWindowHDC, (HBRUSH)CreateSolidBrush(color));
+	Rectangle(mainWindowHDC, cubePos(x), cubePos(y), cubePos(x + 1), cubePos(y + 1));
+	SelectObject(mainWindowHDC, oldBrush);
+}
+void inline showCube(POINT pos)
+{
+	Rectangle(mainWindowHDC, cubePos(pos.x), cubePos(pos.y), cubePos(pos.x + 1), cubePos(pos.y + 1));
+}
+void inline showCube(POINT pos, COLORREF color)
+{
+	HBRUSH oldBrush = (HBRUSH)SelectObject(mainWindowHDC, (HBRUSH)CreateSolidBrush(color));
+	Rectangle(mainWindowHDC, cubePos(pos.x), cubePos(pos.y), cubePos(pos.x + 1), cubePos(pos.y + 1));
+	SelectObject(mainWindowHDC, oldBrush);
+}
+void debugShowMap() //TOFIX
+{
+	eriseWindow();
+	HBRUSH hOldBrush = (HBRUSH)SelectObject(mainWindowHDC, (HBRUSH)CreateSolidBrush(RGB(255, 255, 255)));
+
+	for (int i = 0; i < mapYSize; i++)
+		for (int j = 0; j < mapXSize; j++)
+			if (map[i][j] == wall)
+				showCube(j, i);
+
+	showCube(player.pos, RGB(0, 255, 0));
+	/*switch (player.viewDirection)
+	{
+	case N: cout << '^'; break;
+	case W: cout << '<'; break;
+	case E: cout << '>'; break;
+	case S: cout << 'v'; break;
+	}*/
+
+	showCube(monster.pos, RGB(255, 0, 0));
+
+	SelectObject(mainWindowHDC, hOldBrush);
+}
 
 void showGameCanvas()
 {
 	PAINTSTRUCT ps;
 	mainWindowHDC = BeginPaint(mainWindowHWND, &ps);
 
-	showWall(1, leftSide);
+	debugShowMap();
+
+	/*showWall(1, leftSide);
 	showNone(2, leftSide);
 	showWall(3, leftSide);
 	showNone(4, leftSide);
@@ -387,7 +395,7 @@ void showGameCanvas()
 	showDoor(3);
 	showWall(4, frontSide);
 	showWall(5, frontSide);
-	showWall(6, frontSide);
+	showWall(6, frontSide);*/
 
 	EndPaint(mainWindowHWND, &ps);
 }
@@ -400,11 +408,13 @@ typedef enum gameState
 };
 gameState Game_Tick()
 {
+	showGameCanvas();
+
 	for (int i = 0; i < 20; i++, Sleep(1000 / 50))
 	{
-		if (bool(kbhit()))
+		if (bool(_kbhit()))
 		{
-			char pressedKey = getch();
+			char pressedKey = _getch();
 			switch (pressedKey)
 			{
 			case 'W':

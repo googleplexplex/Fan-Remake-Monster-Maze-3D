@@ -121,8 +121,8 @@ void Game_Init()
 	//font.lfQuality = 0;// Устанавливает качество вывода
 	//font.lfPitchAndFamily = 0;// Устанавливает ширину символов и семейство шрифта
 	//strcpy(font.lfFaceName, "VERDANA");//  устанавливает название шрифта
-
 	hfont = CreateFontIndirect(&font);
+	srand(time(NULL));
 }
 
 void Game_Main()
