@@ -8,32 +8,40 @@ typedef enum block {
 };
 constexpr unsigned int mapXSize = 25;
 constexpr unsigned int mapYSize = 25;
-block map[mapXSize][mapYSize];
+block gameMap[mapXSize][mapYSize];
+block getFromMap(unsigned int x, unsigned int y)
+{
+	return gameMap[y + 1][x + 1];
+}
+void setToMap(unsigned int x, unsigned int y, block val)
+{
+	gameMap[y + 1][x + 1] = val;
+}
 constexpr POINT doorPos = { mapXSize - 2, mapYSize - 1 };
 
 bool deadEnd(int x, int y) {
 	int a = 0;
 
 	if (x != 1) {
-		if (map[y][x - 2] == none)
+		if (gameMap[y][x - 2] == none)
 			a += 1;
 	}
 	else a += 1;
 
 	if (y != 1) {
-		if (map[y - 2][x] == none)
+		if (gameMap[y - 2][x] == none)
 			a += 1;
 	}
 	else a += 1;
 
 	if (x != mapXSize - 2) {
-		if (map[y][x + 2] == none)
+		if (gameMap[y][x + 2] == none)
 			a += 1;
 	}
 	else a += 1;
 
 	if (y != mapYSize - 2) {
-		if (map[y + 2][x] == none)
+		if (gameMap[y + 2][x] == none)
 			a += 1;
 	}
 	else a += 1;
@@ -50,36 +58,36 @@ void generateMap()
 
 	for (int i = 0; i < mapYSize; i++) // Массив заполняется землей-ноликами
 		for (int j = 0; j < mapXSize; j++)
-			map[i][j] = wall;
+			gameMap[i][j] = wall;
 
 	x = 3; y = 3; a = 0; // Точка приземления крота и счетчик
 	while (a < 10000) { // Да, простите, костыль, иначе есть как, но лень
-		map[y][x] = none; a++;
+		gameMap[y][x] = none; a++;
 		while (1) { // Бесконечный цикл, который прерывается только тупиком
 			c = rand() % 4; // Напоминаю, что крот прорывает
 			switch (c) {  // по две клетки в одном направлении за прыжок
 			case 0: if (y != 1)
-				if (map[y - 2][x] == wall) { // Вверх
-					map[y - 1][x] = none;
-					map[y - 2][x] = none;
+				if (gameMap[y - 2][x] == wall) { // Вверх
+					gameMap[y - 1][x] = none;
+					gameMap[y - 2][x] = none;
 					y -= 2;
 				}
 			case 1: if (y != mapYSize - 2)
-				if (map[y + 2][x] == wall) { // Вниз
-					map[y + 1][x] = none;
-					map[y + 2][x] = none;
+				if (gameMap[y + 2][x] == wall) { // Вниз
+					gameMap[y + 1][x] = none;
+					gameMap[y + 2][x] = none;
 					y += 2;
 				}
 			case 2: if (x != 1)
-				if (map[y][x - 2] == wall) { // Налево
-					map[y][x - 1] = none;
-					map[y][x - 2] = none;
+				if (gameMap[y][x - 2] == wall) { // Налево
+					gameMap[y][x - 1] = none;
+					gameMap[y][x - 2] = none;
 					x -= 2;
 				}
 			case 3: if (x != mapXSize - 2)
-				if (map[y][x + 2] == wall) { // Направо
-					map[y][x + 1] = none;
-					map[y][x + 2] = none;
+				if (gameMap[y][x + 2] == wall) { // Направо
+					gameMap[y][x + 1] = none;
+					gameMap[y][x + 2] = none;
 					x += 2;
 				}
 			}
@@ -91,6 +99,6 @@ void generateMap()
 			do {
 				x = 2 * (rand() % ((mapXSize - 1) / 2)) + 1;
 				y = 2 * (rand() % ((mapYSize - 1) / 2)) + 1;
-			} while (map[y][x] != none);
+			} while (gameMap[y][x] != none);
 	} // На этом и все.
 }

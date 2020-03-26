@@ -93,6 +93,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_PAINT:
 		mainWindowHDC = BeginPaint(hWnd, &ps);
 		showGameCanvas();
+		ValidateRect(hWnd, NULL);
 		EndPaint(hWnd, &ps);
 		return 0;
 	case WM_DESTROY:

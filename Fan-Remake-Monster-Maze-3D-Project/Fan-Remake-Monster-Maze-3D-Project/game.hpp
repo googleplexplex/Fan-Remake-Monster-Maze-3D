@@ -65,7 +65,7 @@ public:
 		case S: goTo.y++; break;
 		}
 
-		if (map[goTo.x][goTo.y] != wall)
+		if (getFromMap(goTo.x, goTo.y) != wall)
 		{
 			pos = goTo;
 		}
@@ -115,14 +115,14 @@ public:
 	{
 		if (player.pos.x == monster.pos.x)
 		{
-			for (int i = monster.pos.x; map[i][pos.y] != wall; i++)
+			for (int i = monster.pos.x; getFromMap(i, pos.y) != wall; i++)
 			{
 				if (player.pos.x == i)
 				{
 					return E;
 				}
 			}
-			for (int i = monster.pos.x; map[i][pos.y] != wall; i--)
+			for (int i = monster.pos.x; getFromMap(i, pos.y) != wall; i--)
 			{
 				if (player.pos.x == i)
 				{
@@ -132,14 +132,14 @@ public:
 		}
 		if (player.pos.y == monster.pos.y)
 		{
-			for (int i = monster.pos.y; map[pos.x][i] != wall; i++)
+			for (int i = monster.pos.y; getFromMap(pos.x, i) != wall; i++)
 			{
 				if (player.pos.y == i)
 				{
 					return S;
 				}
 			}
-			for (int i = monster.pos.y; map[pos.x][i] != wall; i--)
+			for (int i = monster.pos.y; getFromMap(pos.x, i) != wall; i--)
 			{
 				if (player.pos.y == i)
 				{
@@ -153,10 +153,10 @@ public:
 	{
 		switch (target)
 		{
-		case N: return (map[pos.x][pos.y - 1] == wall);
-		case W: return (map[pos.x - 1][pos.y] == wall);
-		case E: return (map[pos.x + 1][pos.y - 1] == wall);
-		case S: return (map[pos.x][pos.y + 1] == wall);
+		case N: return (getFromMap(pos.x, pos.y - 1) == wall);
+		case W: return (getFromMap(pos.x - 1, pos.y) == wall);
+		case E: return (getFromMap(pos.x + 1, pos.y - 1) == wall);
+		case S: return (getFromMap(pos.x, pos.y + 1) == wall);
 		}
 	}
 	void setRandomTarget()
@@ -194,7 +194,7 @@ public:
 			target = seePlayer;
 		else if (monsterInTarget())
 			setRandomTarget();
-
+		
 		moveToTarget();
 	}
 	bool inline catchPlayer()
@@ -208,13 +208,13 @@ void generateGame()
 {
 	generateMap();
 	player.pos.x = player.pos.y = 1;
-	map[mapXSize - 2][mapYSize - 1] = door;
+	setToMap(mapXSize - 2, mapYSize - 1, door);
 
 	monster.pos.x = mapXSize / 2; monster.pos.y = mapYSize / 2;
 	monster.setRandomTarget();
 	for (int i = mapYSize / 2; i != 0; i--)
 	{
-		if (map[monster.pos.x][i] == none)
+		if (getFromMap(monster.pos.x, i) == none)
 		{
 			monster.pos.y = i;
 			return;
@@ -222,7 +222,7 @@ void generateGame()
 	}
 	for (int i = mapXSize / 2; i != 0; i--)
 	{
-		if (map[i][monster.pos.y] == none)
+		if (getFromMap(i, monster.pos.y) == none)
 		{
 			monster.pos.x = i;
 			return;
@@ -348,29 +348,20 @@ void inline showCube(POINT pos, COLORREF color)
 void debugShowMap() //TOFIX
 {
 	eriseWindow();
-	HBRUSH hOldBrush = (HBRUSH)SelectObject(mainWindowHDC, (HBRUSH)CreateSolidBrush(RGB(255, 255, 255)));
+	HBRUSH hOldBrush = (HBRUSH)SelectObject(mainWindowHDC, (HBRUSH)CreateSolidBrush(RGB(rand()%255, rand() % 255, rand() % 255)));
 
 	for (int i = 0; i < mapYSize; i++)
 	{
 		for (int j = 0; j < mapXSize; j++)
 		{
-			if (map[i][j] == wall)
+			if (gameMap[i][j] == wall)
 			{
 				showCube(j, i);
 			}
 		}
 	}
-
 	showCube(player.pos, RGB(0, 255, 0));
-	/*switch (player.viewDirection)
-	{
-	case N: cout << '^'; break;
-	case W: cout << '<'; break;
-	case E: cout << '>'; break;
-	case S: cout << 'v'; break;
-	}*/
-
-	showCube(monster.pos, RGB(255, 0, 0));
+	showCube(monster.pos.x - 1, monster.pos.y - 1, RGB(255, 0, 0));
 
 	SelectObject(mainWindowHDC, hOldBrush);
 }
@@ -378,27 +369,6 @@ void debugShowMap() //TOFIX
 void showGameCanvas()
 {
 	debugShowMap();
-
-	/*showWall(1, leftSide);
-	showNone(2, leftSide);
-	showWall(3, leftSide);
-	showNone(4, leftSide);
-	showWall(5, leftSide);
-	showNone(6, leftSide);
-
-	showWall(1, rightSide);
-	showNone(2, rightSide);
-	showWall(3, rightSide);
-	showNone(4, rightSide);
-	showWall(5, rightSide);
-	showNone(6, rightSide);
-
-	showWall(1, frontSide);
-	showMonster(2);
-	showDoor(3);
-	showWall(4, frontSide);
-	showWall(5, frontSide);
-	showWall(6, frontSide);*/
 }
 
 typedef enum gameState
@@ -409,6 +379,7 @@ typedef enum gameState
 };
 void inline refreshCanvas()
 {
+	InvalidateRect(mainWindowHWND, NULL, NULL);
 	SendMessage(mainWindowHWND, WM_PAINT, NULL, NULL);
 }
 gameState Game_Tick()
