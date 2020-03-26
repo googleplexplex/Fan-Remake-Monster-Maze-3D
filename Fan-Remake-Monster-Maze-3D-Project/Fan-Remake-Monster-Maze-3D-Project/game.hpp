@@ -297,9 +297,9 @@ void inline showWall(short range, sidesEnum side)
 {
 	trapeze(getTrapezeCoords(range, side), wallBrush);
 }
-unsigned short cubePos(unsigned short sizeInBlocks)
+int cubePos(int sizeInBlocks)
 {
-	return screenSize.y / 48 * sizeInBlocks - 1;
+	return (screenSize.y / 48) * sizeInBlocks;
 }
 void inline showNone(short range, sidesEnum side)
 {
@@ -351,9 +351,15 @@ void debugShowMap() //TOFIX
 	HBRUSH hOldBrush = (HBRUSH)SelectObject(mainWindowHDC, (HBRUSH)CreateSolidBrush(RGB(255, 255, 255)));
 
 	for (int i = 0; i < mapYSize; i++)
+	{
 		for (int j = 0; j < mapXSize; j++)
+		{
 			if (map[i][j] == wall)
+			{
 				showCube(j, i);
+			}
+		}
+	}
 
 	showCube(player.pos, RGB(0, 255, 0));
 	/*switch (player.viewDirection)
@@ -371,9 +377,6 @@ void debugShowMap() //TOFIX
 
 void showGameCanvas()
 {
-	PAINTSTRUCT ps;
-	mainWindowHDC = BeginPaint(mainWindowHWND, &ps);
-
 	debugShowMap();
 
 	/*showWall(1, leftSide);
@@ -396,8 +399,6 @@ void showGameCanvas()
 	showWall(4, frontSide);
 	showWall(5, frontSide);
 	showWall(6, frontSide);*/
-
-	EndPaint(mainWindowHWND, &ps);
 }
 
 typedef enum gameState
@@ -406,9 +407,13 @@ typedef enum gameState
 	lose,
 	inProcess
 };
+void inline refreshCanvas()
+{
+	SendMessage(mainWindowHWND, WM_PAINT, NULL, NULL);
+}
 gameState Game_Tick()
 {
-	showGameCanvas();
+	refreshCanvas();
 
 	for (int i = 0; i < 20; i++, Sleep(1000 / 50))
 	{
@@ -434,7 +439,7 @@ gameState Game_Tick()
 				player.turnAround();
 				break;
 			}
-			showGameCanvas();
+			refreshCanvas();
 			if (monster.catchPlayer())
 				return lose;
 			if (player.inDoor())
@@ -442,7 +447,7 @@ gameState Game_Tick()
 		}
 	}
 	monster.alifeTick();
-	showGameCanvas();
+	refreshCanvas();
 	if (monster.catchPlayer())
 		return lose;
 	return inProcess;

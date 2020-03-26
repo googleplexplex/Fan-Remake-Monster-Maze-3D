@@ -85,14 +85,14 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
 LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	PAINTSTRUCT ps;
-	HDC hdc;
 
 	switch (msg)
 	{
 	case WM_CREATE:
 		return 0;
 	case WM_PAINT:
-		hdc = BeginPaint(hWnd, &ps);
+		mainWindowHDC = BeginPaint(hWnd, &ps);
+		showGameCanvas();
 		EndPaint(hWnd, &ps);
 		return 0;
 	case WM_DESTROY:
@@ -123,15 +123,20 @@ void Game_Init()
 	//strcpy(font.lfFaceName, "VERDANA");//  устанавливает название шрифта
 	hfont = CreateFontIndirect(&font);
 	srand(time(NULL));
+	Game_Menu();
 }
 
 void Game_Main()
 {
 	RECT consoleWindowRect = { 0 };
 	GetWindowRect(mainWindowHWND, &consoleWindowRect);
-
 	MoveWindow(mainWindowHWND, consoleWindowRect.left, consoleWindowRect.top, screenSize.x + 4, screenSize.y + 30, NULL);
-	Game_Menu();
+
+	gameState presentGameState = Game_Tick();
+	if (presentGameState == win)
+		Game_Win();
+	else if (presentGameState == lose)
+		Game_GameOver();
 }
 
 void Game_Shitdown()
