@@ -11,11 +11,7 @@ constexpr unsigned int mapYSize = 25;
 block gameMap[mapXSize][mapYSize];
 block getFromMap(unsigned int x, unsigned int y)
 {
-	return gameMap[y + 1][x + 1];
-}
-void setToMap(unsigned int x, unsigned int y, block val)
-{
-	gameMap[y + 1][x + 1] = val;
+	return gameMap[y][x];
 }
 constexpr POINT doorPos = { mapXSize - 2, mapYSize - 1 };
 

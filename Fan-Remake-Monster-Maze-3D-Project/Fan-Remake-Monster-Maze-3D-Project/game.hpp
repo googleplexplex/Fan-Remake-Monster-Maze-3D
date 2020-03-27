@@ -155,7 +155,7 @@ public:
 		{
 		case N: return (getFromMap(pos.x, pos.y - 1) == wall);
 		case W: return (getFromMap(pos.x - 1, pos.y) == wall);
-		case E: return (getFromMap(pos.x + 1, pos.y - 1) == wall);
+		case E: return (getFromMap(pos.x + 1, pos.y) == wall);
 		case S: return (getFromMap(pos.x, pos.y + 1) == wall);
 		}
 	}
@@ -208,9 +208,10 @@ void generateGame()
 {
 	generateMap();
 	player.pos.x = player.pos.y = 1;
-	setToMap(mapXSize - 2, mapYSize - 1, door);
+	gameMap[mapXSize - 2][mapYSize - 1] = door;
 
 	monster.pos.x = mapXSize / 2; monster.pos.y = mapYSize / 2;
+	//monster.pos = { 1, 1 };
 	monster.setRandomTarget();
 	for (int i = mapYSize / 2; i != 0; i--)
 	{
@@ -361,7 +362,7 @@ void debugShowMap() //TOFIX
 		}
 	}
 	showCube(player.pos, RGB(0, 255, 0));
-	showCube(monster.pos.x - 1, monster.pos.y - 1, RGB(255, 0, 0));
+	showCube(monster.pos, RGB(255, 0, 0));
 
 	SelectObject(mainWindowHDC, hOldBrush);
 }
