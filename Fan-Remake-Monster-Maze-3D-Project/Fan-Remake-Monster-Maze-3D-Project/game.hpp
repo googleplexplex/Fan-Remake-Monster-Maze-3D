@@ -3,6 +3,7 @@
 #include <wingdi.h>
 #include <time.h>
 #include <conio.h>
+#include <atomic>
 #include "map.hpp"
 using namespace std;
 #include "output.hpp"
@@ -53,7 +54,7 @@ class playerClass
 {
 public:
 	POINT pos;
-	direction viewDirection;
+	direction viewDirection = E;
 	void moveForward()
 	{
 		POINT goTo = pos;
@@ -69,18 +70,29 @@ public:
 		{
 			pos = goTo;
 		}
+
+		if (player.inDoor())
+			presentGameState = win;
+
+		refreshCanvas();
 	}
 	void inline turnLeft()
 	{
 		viewDirection = turnDirectionLeft(viewDirection);
+
+		refreshCanvas();
 	}
 	void inline turnRight()
 	{
 		viewDirection = turnDirectionRight(viewDirection);
+
+		refreshCanvas();
 	}
 	void inline turnAround()
 	{
 		viewDirection = turnDirectionAround(viewDirection);
+
+		refreshCanvas();
 	}
 	bool inDoor()
 	{
@@ -161,20 +173,30 @@ public:
 	}
 	void setRandomTarget()
 	{
-		start:
+	start:
 		switch (rand() % 4)
 		{
 		case 0:
-			target = W; break;
+			if (target == W || getFromMap(pos.x - 1, pos.y) == wall)
+				goto start;
+			target = W;
+			break;
 		case 1:
-			target = N; break;
+			if (target == N || getFromMap(pos.x, pos.y - 1) == wall)
+				goto start;
+			target = N;
+			break;
 		case 2:
-			target = E; break;
+			if (target == E || getFromMap(pos.x + 1, pos.y) == wall)
+				goto start;
+			target = E;
+			break;
 		case 3:
-			target = S; break;
+			if (target == S || getFromMap(pos.x, pos.y + 1) == wall)
+				goto start;
+			target = S;
+			break;
 		}
-		if (monsterInTarget())
-			goto start;
 	}
 	void moveToTarget()
 	{
@@ -348,7 +370,6 @@ void inline showCube(POINT pos, COLORREF color)
 }
 void debugShowMap() //TOFIX
 {
-	eriseWindow();
 	HBRUSH hOldBrush = (HBRUSH)SelectObject(mainWindowHDC, (HBRUSH)CreateSolidBrush(RGB(rand()%255, rand() % 255, rand() % 255)));
 
 	for (int i = 0; i < mapYSize; i++)
@@ -372,55 +393,13 @@ void showGameCanvas()
 	debugShowMap();
 }
 
-typedef enum gameState
+std::atomic_bool callGameTick = false;
+void Game_Tick()
 {
-	win = 0,
-	lose,
-	inProcess
-};
-void inline refreshCanvas()
-{
-	InvalidateRect(mainWindowHWND, NULL, NULL);
-	SendMessage(mainWindowHWND, WM_PAINT, NULL, NULL);
-}
-gameState Game_Tick()
-{
-	refreshCanvas();
-
-	for (int i = 0; i < 20; i++, Sleep(1000 / 50))
-	{
-		if (bool(_kbhit()))
-		{
-			char pressedKey = _getch();
-			switch (pressedKey)
-			{
-			case 'W':
-			case 'w':
-				player.moveForward();
-				break;
-			case 'Q':
-			case 'q':
-				player.turnLeft();
-				break;
-			case 'E':
-			case 'e':
-				player.turnRight();
-				break;
-			case 'S':
-			case 's':
-				player.turnAround();
-				break;
-			}
-			refreshCanvas();
-			if (monster.catchPlayer())
-				return lose;
-			if (player.inDoor())
-				return win;
-		}
-	}
+	Sleep(1000);
 	monster.alifeTick();
 	refreshCanvas();
 	if (monster.catchPlayer())
-		return lose;
-	return inProcess;
+		presentGameState = lose;
+	callGameTick = true;
 }

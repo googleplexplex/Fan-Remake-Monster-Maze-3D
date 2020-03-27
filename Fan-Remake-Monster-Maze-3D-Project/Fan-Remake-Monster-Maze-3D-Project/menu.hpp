@@ -11,21 +11,37 @@ void Game_Win() //TODO
 
 }
 
-void Game_Game()
+void Game_GenerateGame()
 {
 	generateGame();
-	Game_Tick();
 }
 
-void Game_Menu()
+void Game_ShowMenu()
 {
-	generateGame();
-	return;
-	Game_Game(); //Temp Debug
-
 	HFONT oldFont = (HFONT)SelectObject(mainWindowHDC, hfont);
 	SetTextColor(mainWindowHDC, RGB(255, 255, 255));
 	SetBkColor(mainWindowHDC, RGB(0, 0, 0));
 	TextOut(mainWindowHDC, screenSize.x / 3, screenSize.y / 5, "MONSTER MAZE 3D", strlen("MONSTER MAZE 3D"));
+	TextOut(mainWindowHDC, screenSize.x / 3, screenSize.y / 2, "PRESS SPACE TO START", strlen("PRESS SPACE TO START"));
+	SelectObject(mainWindowHDC, oldFont);
+}
+
+void Game_ShowWin()
+{
+	HFONT oldFont = (HFONT)SelectObject(mainWindowHDC, hfont);
+	SetTextColor(mainWindowHDC, RGB(255, 255, 255));
+	SetBkColor(mainWindowHDC, RGB(0, 0, 0));
+	TextOut(mainWindowHDC, screenSize.x / 2, screenSize.y / 5, "YOU WAS ESCAPED", strlen("YOU WAS ESCAPED"));
+	TextOut(mainWindowHDC, screenSize.x / 3, screenSize.y / 2, "PRESS SPACE TO MENU", strlen("PRESS SPACE TO MENU"));
+	SelectObject(mainWindowHDC, oldFont);
+}
+
+void Game_ShowLose()
+{
+	HFONT oldFont = (HFONT)SelectObject(mainWindowHDC, hfont);
+	SetTextColor(mainWindowHDC, RGB(255, 255, 255));
+	SetBkColor(mainWindowHDC, RGB(0, 0, 0));
+	TextOut(mainWindowHDC, screenSize.x / 2, screenSize.y / 5, "YOU WAS CATHCED BY MONSTER", strlen("YOU WAS CATHCED BY MONSTER"));
+	TextOut(mainWindowHDC, screenSize.x / 3, screenSize.y / 2, "PRESS SPACE TO MENU", strlen("PRESS SPACE TO MENU"));
 	SelectObject(mainWindowHDC, oldFont);
 }

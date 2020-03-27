@@ -1,4 +1,5 @@
 #include <Windows.h>
+#include <thread>
 
 #define WINDOW_CLASS_NAME "Monster_Maze_3D_Fan_Remake"
 
@@ -6,6 +7,15 @@ HINSTANCE hInstanceApp;
 HWND mainWindowHWND;
 HDC mainWindowHDC;
 constexpr POINT screenSize = { 800, 500 };
+
+typedef enum gameState
+{
+	win = 0,
+	lose,
+	inProcess,
+	inMenu
+};
+gameState presentGameState = inMenu;
 
 LOGFONT font;
 HFONT hfont;
@@ -82,6 +92,10 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
 }
 
 //  ЦЕЛЬ: Обрабатывает сообщения в главном окне.
+#define KB_Q 0x51
+#define KB_W 0x57
+#define KB_E 0x45
+#define KB_S 0x53
 LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	PAINTSTRUCT ps;
@@ -92,9 +106,78 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		return 0;
 	case WM_PAINT:
 		mainWindowHDC = BeginPaint(hWnd, &ps);
-		showGameCanvas();
+		eriseWindow();
+		switch (presentGameState)
+		{
+		case inProcess:
+			showGameCanvas();
+			break;
+		case lose:
+			Game_ShowLose();
+			break;
+		case win:
+			Game_ShowWin();
+			break;
+		case inMenu:
+			Game_ShowMenu();
+			break;
+		}
 		ValidateRect(hWnd, NULL);
 		EndPaint(hWnd, &ps);
+		return 0;
+	case WM_KEYDOWN:
+		unsigned int key;
+		key = wParam; //Получаем код нажатой клавиши
+		switch (presentGameState)
+		{
+		case inProcess:
+			switch (key)
+			{
+			case KB_Q:
+				player.turnLeft();
+				break;
+			case KB_W:
+				player.moveForward();
+				if (monster.catchPlayer())
+					presentGameState = lose;
+				break;
+			case KB_E:
+				player.turnRight();
+				break;
+			case KB_S:
+				player.turnAround();
+				break;
+			case VK_ESCAPE:
+				PostQuitMessage(0);
+			case VK_SPACE:
+			default:
+				break;
+			}
+			break;
+		case win:
+		case lose:
+			switch (key)
+			{
+			case VK_ESCAPE:
+			case VK_SPACE:
+				presentGameState = inMenu;
+			default:
+				break;
+			}
+			break;
+		case inMenu:
+			switch (key)
+			{
+			case VK_ESCAPE:
+				PostQuitMessage(0);
+			case VK_SPACE:
+				presentGameState = inProcess;
+				Game_GenerateGame();
+			default:
+				break;
+			}
+			break;
+		}
 		return 0;
 	case WM_DESTROY:
 		PostQuitMessage(0);
@@ -124,7 +207,6 @@ void Game_Init()
 	//strcpy(font.lfFaceName, "VERDANA");//  устанавливает название шрифта
 	hfont = CreateFontIndirect(&font);
 	srand(time(NULL));
-	Game_Menu();
 }
 
 void Game_Main()
@@ -133,11 +215,12 @@ void Game_Main()
 	GetWindowRect(mainWindowHWND, &consoleWindowRect);
 	MoveWindow(mainWindowHWND, consoleWindowRect.left, consoleWindowRect.top, screenSize.x + 4, screenSize.y + 30, NULL);
 
-	gameState presentGameState = Game_Tick();
-	if (presentGameState == win)
-		Game_Win();
-	else if (presentGameState == lose)
-		Game_GameOver();
+	if (presentGameState == inProcess && callGameTick == true)
+	{
+		std::thread monsterLogicThread(Game_Tick);
+		monsterLogicThread.detach();
+		callGameTick = false;
+	}
 }
 
 void Game_Shitdown()
