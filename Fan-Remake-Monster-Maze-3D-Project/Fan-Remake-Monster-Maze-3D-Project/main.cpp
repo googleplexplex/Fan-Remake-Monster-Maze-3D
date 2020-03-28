@@ -191,6 +191,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 void Game_Init()
 {
+	srand(time(NULL));
 	font.lfHeight = 24;// Устанавливает высоту шрифта или символа
 	font.lfWidth = 12;// Устанавливает среднюю ширину символов в шрифте
 	//font.lfEscapement = 0;// Устанавливает угол, между вектором наклона и осью X устройства
@@ -206,7 +207,6 @@ void Game_Init()
 	//font.lfPitchAndFamily = 0;// Устанавливает ширину символов и семейство шрифта
 	//strcpy(font.lfFaceName, "VERDANA");//  устанавливает название шрифта
 	hfont = CreateFontIndirect(&font);
-	srand(time(NULL));
 }
 
 void Game_Main()

@@ -127,36 +127,42 @@ public:
 	{
 		if (player.pos.x == monster.pos.x)
 		{
-			for (int i = monster.pos.x; getFromMap(i, pos.y) != wall; i++)
+			if (player.pos.y > monster.pos.y)
 			{
-				if (player.pos.x == i)
+				for (int i = monster.pos.y + 1; i < player.pos.y; i++)
 				{
-					return E;
+					if (gameMap[monster.pos.x][i] == wall)
+						return null;
 				}
+				return S;
 			}
-			for (int i = monster.pos.x; getFromMap(i, pos.y) != wall; i--)
-			{
-				if (player.pos.x == i)
+			else {
+				for (int i = monster.pos.y - 1; i >= 0; i--)
 				{
-					return W;
+					if (gameMap[monster.pos.x][i] == wall)
+						return null;
 				}
+				return N;
 			}
 		}
-		if (player.pos.y == monster.pos.y)
+		else if (player.pos.y == monster.pos.y)
 		{
-			for (int i = monster.pos.y; getFromMap(pos.x, i) != wall; i++)
+			if (player.pos.x > monster.pos.x)
 			{
-				if (player.pos.y == i)
+				for (int i = monster.pos.x + 1; i < player.pos.x; i++)
 				{
-					return S;
+					if (gameMap[i][monster.pos.y] == wall)
+						return null;
 				}
+				return E;
 			}
-			for (int i = monster.pos.y; getFromMap(pos.x, i) != wall; i--)
-			{
-				if (player.pos.y == i)
+			else {
+				for (int i = monster.pos.x - 1; i < player.pos.x; i--)
 				{
-					return N;
+					if (gameMap[i][monster.pos.y] == wall)
+						return null;
 				}
+				return W;
 			}
 		}
 		return null;
@@ -173,26 +179,32 @@ public:
 	}
 	void setRandomTarget()
 	{
+		bool wallsAround[4] = { getFromMap(pos.x - 1, pos.y) == wall, getFromMap(pos.x, pos.y - 1) == wall, getFromMap(pos.x + 1, pos.y) == wall, getFromMap(pos.x, pos.y + 1) == wall }; //WNES
+		if (wallsAround[0] + wallsAround[1] + wallsAround[2] + wallsAround[3] == 3) //TOFIX
+		{
+			target = turnDirectionAround(target);
+			return;
+		}
 	start:
 		switch (rand() % 4)
 		{
 		case 0:
-			if (target == W || getFromMap(pos.x - 1, pos.y) == wall)
+			if (target == W || wallsAround[0])
 				goto start;
 			target = W;
 			break;
 		case 1:
-			if (target == N || getFromMap(pos.x, pos.y - 1) == wall)
+			if (target == N || wallsAround[1])
 				goto start;
 			target = N;
 			break;
 		case 2:
-			if (target == E || getFromMap(pos.x + 1, pos.y) == wall)
+			if (target == E || wallsAround[2])
 				goto start;
 			target = E;
 			break;
 		case 3:
-			if (target == S || getFromMap(pos.x, pos.y + 1) == wall)
+			if (target == S || wallsAround[3])
 				goto start;
 			target = S;
 			break;
@@ -221,7 +233,7 @@ public:
 	}
 	bool inline catchPlayer()
 	{
-		return (abs(monster.pos.x - player.pos.x) == 1 || abs(monster.pos.y - player.pos.y) == 1);
+		return (pointsEqual(player.pos, monster.pos));
 	}
 }monster;
 
@@ -229,13 +241,13 @@ public:
 void generateGame()
 {
 	generateMap();
-	player.pos.x = player.pos.y = 1;
+	player.pos.x = player.pos.y = mapXSize - 1;
 	gameMap[mapXSize - 2][mapYSize - 1] = door;
 
-	monster.pos.x = mapXSize / 2; monster.pos.y = mapYSize / 2;
-	//monster.pos = { 1, 1 };
-	monster.setRandomTarget();
-	for (int i = mapYSize / 2; i != 0; i--)
+	//monster.pos.x = mapXSize / 2; monster.pos.y = mapYSize / 2;
+	monster.pos = { 1, 1 };
+	//monster.setRandomTarget();
+	/*for (int i = mapYSize / 2; i != 0; i--)
 	{
 		if (getFromMap(monster.pos.x, i) == none)
 		{
@@ -250,7 +262,7 @@ void generateGame()
 			monster.pos.x = i;
 			return;
 		}
-	}
+	}*/
 }
 
 
@@ -396,6 +408,7 @@ void showGameCanvas()
 std::atomic_bool callGameTick = true;
 void Game_Tick()
 {
+	srand(time(NULL));
 	Sleep(1000);
 	monster.alifeTick();
 	refreshCanvas();
