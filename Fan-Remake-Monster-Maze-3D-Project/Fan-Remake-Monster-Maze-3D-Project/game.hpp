@@ -393,7 +393,7 @@ void showGameCanvas()
 	debugShowMap();
 }
 
-std::atomic_bool callGameTick = false;
+std::atomic_bool callGameTick = true;
 void Game_Tick()
 {
 	Sleep(1000);
