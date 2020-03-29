@@ -44,10 +44,10 @@ direction inline turnDirectionAround(direction rolledDirection)
 {
 	switch (rolledDirection)
 	{
-	case N: return E;
-	case E: return S;
-	case S: return W;
-	case W: return N;
+	case N: return S;
+	case E: return W;
+	case S: return N;
+	case W: return E;
 	}
 }
 class playerClass
@@ -189,22 +189,22 @@ public:
 		switch (rand() % 4)
 		{
 		case 0:
-			if (target == W || wallsAround[0])
+			if (target == turnDirectionAround(W) || wallsAround[0])
 				goto start;
 			target = W;
 			break;
 		case 1:
-			if (target == N || wallsAround[1])
+			if (target == turnDirectionAround(N) || wallsAround[1])
 				goto start;
 			target = N;
 			break;
 		case 2:
-			if (target == E || wallsAround[2])
+			if (target == turnDirectionAround(E) || wallsAround[2])
 				goto start;
 			target = E;
 			break;
 		case 3:
-			if (target == S || wallsAround[3])
+			if (target == turnDirectionAround(S) || wallsAround[3])
 				goto start;
 			target = S;
 			break;
