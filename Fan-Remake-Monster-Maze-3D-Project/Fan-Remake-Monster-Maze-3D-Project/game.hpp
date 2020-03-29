@@ -122,7 +122,8 @@ class monsterClass
 {
 public:
 	POINT pos;
-	direction target;
+	direction target = null;
+	unsigned short targetRange = 0;
 	direction seesPlayer() //return null, if false, direction if true
 	{
 		if (player.pos.x == monster.pos.x)
@@ -167,48 +168,132 @@ public:
 		}
 		return null;
 	}
-	bool monsterInTarget()
+	bool inline monsterInTarget()
 	{
-		switch (target)
+		return (targetRange == 0);
+	}
+	unsigned short searchRandomCorridorRange(direction searchedDirection) //range to random corridor, null if dead end
+	{
+		switch (searchedDirection)
 		{
-		case N: return (getFromMap(pos.x, pos.y - 1) == wall);
-		case W: return (getFromMap(pos.x - 1, pos.y) == wall);
-		case E: return (getFromMap(pos.x + 1, pos.y) == wall);
-		case S: return (getFromMap(pos.x, pos.y + 1) == wall);
+		case N:
+			//...
+			break;
+		case W:
+			//...
+			break;
+		case E:
+			//...
+			break;
+		case S:
+			//...
+			break;
+		}
+	}
+	typedef enum directionNum {
+		N_num = 0,
+		W_num,
+		E_num,
+		S_num
+	};
+	bool isDeadEnd(direction searchedDirection)
+	{
+		switch (searchedDirection)
+		{
+		case N:
+			for (int i = pos.y;; i--)
+			{
+				if (gameMap[pos.x][i] == wall)
+					return true;
+				if (gameMap[pos.x - 1][i] == none || gameMap[pos.x + 1][i] == none)
+					return false;
+			}
+		case W:
+			for (int i = pos.x;; i--)
+			{
+				if (gameMap[i][pos.y] == wall)
+					return true;
+				if (gameMap[i][pos.y - 1] == none || gameMap[i][pos.y + 1] == none)
+					return false;
+			}
+		case E:
+			for (int i = pos.x;; i++)
+			{
+				if (gameMap[i][pos.y] == wall)
+					return true;
+				if (gameMap[i][pos.y - 1] == none || gameMap[i][pos.y + 1] == none)
+					return false;
+			}
+		case S:
+			for (int i = pos.y;; i++)
+			{
+				if (gameMap[pos.x][i] == wall)
+					return true;
+				if (gameMap[pos.x - 1][i] == none || gameMap[pos.x + 1][i] == none)
+					return false;
+			}
+		}
+	}
+	directionNum fromDirectionToDirectionNum(direction dir) //TOFIX
+	{
+		switch (dir)
+		{
+		case N:
+			return N_num;
+		case W:
+			return W_num;
+		case E:
+			return E_num;
+		case S:
+			return S_num;
+		}
+	}
+	direction fromDirectionNumToDirection(int dir) //TOFIX
+	{
+		switch (dir)
+		{
+		case N_num:
+			return N;
+		case W_num:
+			return W;
+		case E_num:
+			return E;
+		case S_num:
+			return S;
 		}
 	}
 	void setRandomTarget()
 	{
-		bool wallsAround[4] = { getFromMap(pos.x - 1, pos.y) == wall, getFromMap(pos.x, pos.y - 1) == wall, getFromMap(pos.x + 1, pos.y) == wall, getFromMap(pos.x, pos.y + 1) == wall }; //WNES
-		if (wallsAround[0] + wallsAround[1] + wallsAround[2] + wallsAround[3] == 3) //TOFIX
+		bool walls[4] = { gameMap[pos.x][pos.y - 1] == wall, gameMap[pos.x - 1][pos.y] == wall, gameMap[pos.x + 1][pos.y] == wall, gameMap[pos.x][pos.y + 1] == wall };
+		bool deadEnds[4] = { isDeadEnd(N), isDeadEnd(W), isDeadEnd(E), isDeadEnd(S) };
+		bool corridors[4] = { !(walls[N_num] || deadEnds[N_num]), !(walls[W_num] || deadEnds[W_num]), !(walls[E_num] || deadEnds[E_num]), !(walls[S_num] || deadEnds[S_num]) };
+
+		if (corridors[N_num] + corridors[W_num] + corridors[E_num] + corridors[S_num] == 3) //TOFIX //Если без стен и тупиков только один проход, значит это тот проход, из которого мы пришли
 		{
-			target = turnDirectionAround(target);
+			target = turnDirectionAround(target); //Разворачиваемся, и уходим
+			targetRange = searchRandomCorridorRange(target);
+			return;
+		}
+		corridors[fromDirectionToDirectionNum(turnDirectionAround(target))] = false;
+		if (corridors[N_num] + corridors[W_num] + corridors[E_num] + corridors[S_num] == 3) //Если без стен и тупиков только один проход, и это не тот из них, из которого мы пришли, значит мы стоим на повороте, и хотим продолжить свой путь дальше //TOFIX
+		{
+			for (int i = 0; i < 4; i++) //TOFIX //Идём по единственному доступному пути
+			{
+				if (corridors[i])
+				{
+					target = fromDirectionNumToDirection(i);
+					break;
+				}
+			}
+			targetRange = searchRandomCorridorRange(target);
 			return;
 		}
 	start:
-		switch (rand() % 4)
-		{
-		case 0:
-			if (target == turnDirectionAround(W) || wallsAround[0])
-				goto start;
-			target = W;
-			break;
-		case 1:
-			if (target == turnDirectionAround(N) || wallsAround[1])
-				goto start;
-			target = N;
-			break;
-		case 2:
-			if (target == turnDirectionAround(E) || wallsAround[2])
-				goto start;
-			target = E;
-			break;
-		case 3:
-			if (target == turnDirectionAround(S) || wallsAround[3])
-				goto start;
-			target = S;
-			break;
-		}
+		int randomDirection = rand() % 4; //Если без стен и тупиков (исключая тот, из которого мы пришли) проход не один, значит мы на перекрестке, и случайным образом решаем какой из них мы выберем
+		if (!corridors[randomDirection])
+			goto start;
+		target = fromDirectionNumToDirection(randomDirection);
+		targetRange = searchRandomCorridorRange(target);
 	}
 	void moveToTarget()
 	{
@@ -219,6 +304,7 @@ public:
 		case E: pos.x++; break;
 		case S: pos.y++; break;
 		}
+		targetRange--;
 	}
 	void alifeTick()
 	{
