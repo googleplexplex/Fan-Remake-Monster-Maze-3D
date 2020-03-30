@@ -27,6 +27,7 @@ direction inline turnDirectionLeft(direction rolledDirection)
 	case N: return W;
 	case W: return S;
 	case S: return E;
+	default:
 	case E: return N;
 	}
 }
@@ -37,6 +38,7 @@ direction inline turnDirectionRight(direction rolledDirection)
 	case N: return E;
 	case E: return S;
 	case S: return W;
+	default:
 	case W: return N;
 	}
 }
@@ -47,6 +49,7 @@ direction inline turnDirectionAround(direction rolledDirection)
 	case N: return S;
 	case E: return W;
 	case S: return N;
+	default:
 	case W: return E;
 	}
 }
@@ -99,7 +102,7 @@ public:
 		return pointsEqual(pos, doorPos);
 	}
 }player;
-void showCompas()
+void showCompas() //TODO
 {
 	setTo(1, 1);
 	cout << '-' << player.viewDirection << '-';
@@ -108,7 +111,7 @@ void showCompas()
 	setTo(1, 3);
 	cout << '-' << turnDirectionAround(player.viewDirection) << '-';
 }
-void showMap()
+void showMap() //TODO
 {
 	setTo(1, 1);
 	cout << '-' << player.viewDirection << '-';
@@ -177,7 +180,8 @@ public:
 		let = 0,
 		deadEnd,
 		corridor,
-		cameBackFromHere
+		cameBackFromHere,
+		turn
 	};
 	struct passDescription
 	{
@@ -186,7 +190,7 @@ public:
 	};
 	passDescription getPassDescription(direction searchedDirection)
 	{
-		int rangeToWall = 0;
+		unsigned short rangeToWall = 1;
 		passTypeStruct passType = deadEnd;
 		switch (searchedDirection)
 		{
@@ -195,9 +199,14 @@ public:
 				return { let, 0 };
 			while (gameMap[pos.x][pos.y - rangeToWall] != wall)
 			{
-				rangeToWall++;
 				if (passType == deadEnd && (gameMap[pos.x - 1][pos.y - rangeToWall] == none || gameMap[pos.x + 1][pos.y - rangeToWall] == none))
-					passType = corridor;
+				{
+					if (gameMap[pos.x][pos.y - rangeToWall - 1] == wall)
+						passType = turn;
+					else
+						passType = corridor;
+				}
+				rangeToWall++;
 			}
 			break;
 		case W:
@@ -205,17 +214,29 @@ public:
 				return { let, 0 };
 			while (gameMap[pos.x - rangeToWall][pos.y] != wall)
 			{
-				rangeToWall++;
 				if (passType == deadEnd && (gameMap[pos.x - rangeToWall][pos.y - 1] == none || gameMap[pos.x - rangeToWall][pos.y + 1] == none))
-					passType = corridor;
+				{
+					if (gameMap[pos.x - rangeToWall - 1][pos.y] == wall)
+						passType = turn;
+					else
+						passType = corridor;
+				}
+				rangeToWall++;
 			}
 			break;
 		case E:
+			if (gameMap[pos.x + 1][pos.y] == wall)
+				return { let, 0 };
 			while (gameMap[pos.x + rangeToWall][pos.y] != wall)
 			{
-				rangeToWall++;
 				if (passType == deadEnd && (gameMap[pos.x + rangeToWall][pos.y - 1] == none || gameMap[pos.x + rangeToWall][pos.y + 1] == none))
-					passType = corridor;
+				{
+					if (gameMap[pos.x + rangeToWall + 1][pos.y] == wall)
+						passType = turn;
+					else
+						passType = corridor;
+				}
+				rangeToWall++;
 			}
 			break;
 		case S:
@@ -223,13 +244,18 @@ public:
 				return { let, 0 };
 			while (gameMap[pos.x][pos.y + rangeToWall] != wall)
 			{
-				rangeToWall++;
 				if (passType == deadEnd && (gameMap[pos.x - 1][pos.y + rangeToWall] == none || gameMap[pos.x + 1][pos.y + rangeToWall] == none))
-					passType = corridor;
+				{
+					if (gameMap[pos.x][pos.y + rangeToWall + 1] == wall)
+						passType = turn;
+					else
+						passType = corridor;
+				}
+				rangeToWall++;
 			}
 			break;
 		}
-		return { passType, rangeToWall };
+		return { passType, --rangeToWall };
 	}
 	unsigned short searchRangeToRandomCorridor(direction searchedDirection, int range) //range to random corridor
 	{
@@ -237,8 +263,7 @@ public:
 		switch (searchedDirection)
 		{
 		case N:
-		rerandomN:
-			for (int i = 0; i > range; i++)
+			for (int i = 1; i <= range; i++)
 			{
 				if ((bool)rand() % 2 && (gameMap[pos.x - 1][pos.y - i] == none || gameMap[pos.x + 1][pos.y - i] == none))
 				{
@@ -247,7 +272,7 @@ public:
 			}
 			goto reRandom;
 		case W:
-			for (int i = 0; i > range; i++)
+			for (int i = 1; i <= range; i++)
 			{
 				if ((bool)rand() % 2 && (gameMap[pos.x - i][pos.y - 1] == none || gameMap[pos.x - i][pos.y + 1] == none))
 				{
@@ -256,7 +281,7 @@ public:
 			}
 			goto reRandom;
 		case E:
-			for (int i = 0; i > range; i++)
+			for (int i = 1; i <= range; i++)
 			{
 				if ((bool)rand() % 2 && (gameMap[pos.x + i][pos.y - 1] == none || gameMap[pos.x + i][pos.y + 1] == none))
 				{
@@ -265,7 +290,7 @@ public:
 			}
 			goto reRandom;
 		case S:
-			for (int i = 0; i > range; i++)
+			for (int i = 1; i <= range; i++)
 			{
 				if ((bool)rand() % 2 && (gameMap[pos.x - 1][pos.y + i] == none || gameMap[pos.x + 1][pos.y + i] == none))
 				{
@@ -284,6 +309,7 @@ public:
 				return i;
 			}
 		}
+		return -1;
 	}
 	int randomPassNumOfType(passDescription passesDescriptions[4], passTypeStruct searchedPassType)
 	{
@@ -298,23 +324,27 @@ public:
 			}
 		}
 
+		if (numbersOfPassesCount == 0)
+			return -1;
+
 		while (true)
 		{
 			for (int i = 0; i < numbersOfPassesCount; i++)
 			{
 				if (bool(rand() % 2))
 				{
-					return i;
+					return numbersOfPasses[i];
 				}
 			}
 		}
 	}
 	void setRandomTarget()
 	{
-		passDescription passesDescriptions[4] = { getPassDescription(N), getPassDescription(W), getPassDescription(E), getPassDescription(S) };
+		passDescription passesDescriptions[4] = { getPassDescription(N), getPassDescription(W), getPassDescription(E), getPassDescription(S) }; //Получаем информацию о окружении монстра
 		unsigned short deadEndsCount = 0;
 		unsigned short letsCount = 0;
 		unsigned short coridorsCount = 0;
+		unsigned short turnsCount = 0;
 		unsigned short corridorsFromWhichWeReturnedCount = 0;
 
 		for (int i = 0; i < 4; i++)
@@ -330,29 +360,38 @@ public:
 			case corridor:
 				coridorsCount++;
 				break;
+			case turn:
+				turnsCount++;
+				break;
 			}
 		}
 
-		if (letsCount + deadEndsCount + corridorsFromWhichWeReturnedCount == 3)
+		if (letsCount + deadEndsCount + corridorsFromWhichWeReturnedCount == 3) //Если сумма сторон, на которых стены и тупики = 3, значит единственный путь - вернутся
 		{
-			direction onlyCorridorDirection = (direction)firstPassNumOfType(passesDescriptions, corridor);
-			target = onlyCorridorDirection;
-			targetRange = searchRangeToRandomCorridor(target, passesDescriptions[(int)onlyCorridorDirection].range);
+			direction onlyWayDirection = turnDirectionAround(target);
+			target = onlyWayDirection;
+			if (passesDescriptions[(int)onlyWayDirection].passType == turn)
+				targetRange = passesDescriptions[(int)onlyWayDirection].range;
+			else
+				targetRange = searchRangeToRandomCorridor(target, passesDescriptions[(int)onlyWayDirection].range);
 			return;
 		}
 
-		passesDescriptions[(int)turnDirectionAround(target)].passType = cameBackFromHere;
+		passesDescriptions[(int)turnDirectionAround(target)].passType = cameBackFromHere; //Место из которого мы пришли - точно корридор
 		corridorsFromWhichWeReturnedCount++;
 
-		if (letsCount + deadEndsCount + corridorsFromWhichWeReturnedCount == 3)
+		if (letsCount + deadEndsCount + corridorsFromWhichWeReturnedCount == 3) //Если сумма сторон, на которых стены, тупики и из которых мы пришли = 3, значит единственный путь - последний оставшийся
 		{
-			direction onlyCorridorDirection = (direction)firstPassNumOfType(passesDescriptions, corridor);
+			direction onlyCorridorDirection = (direction)firstPassNumOfType(passesDescriptions, turn); //TOFIX *random
 			target = onlyCorridorDirection;
-			targetRange = searchRangeToRandomCorridor(target, passesDescriptions[(int)onlyCorridorDirection].range);
+			if (onlyCorridorDirection != -1)
+				targetRange = passesDescriptions[(int)onlyCorridorDirection].range;
+			else
+				targetRange = searchRangeToRandomCorridor(target, passesDescriptions[(int)onlyCorridorDirection].range);
 			return;
 		}
 
-		direction randomCorridorDirection = (direction)randomPassNumOfType(passesDescriptions, corridor);
+		direction randomCorridorDirection = (direction)randomPassNumOfType(passesDescriptions, corridor); //Оставшийся вариант - проходов несколько. Идём в случайный из
 		target = randomCorridorDirection;
 		targetRange = searchRangeToRandomCorridor(target, passesDescriptions[(int)randomCorridorDirection].range);
 	}
@@ -382,7 +421,24 @@ public:
 	{
 		return (pointsEqual(player.pos, monster.pos));
 	}
+	void setFirstTarget()
+	{
+		passDescription passesDescriptions[4] = { getPassDescription(N), getPassDescription(W), getPassDescription(E), getPassDescription(S) }; //Получаем информацию о окружении монстра
+
+		direction onlyWayDirection = (direction)randomPassNumOfType(passesDescriptions, turn); //И идём в случайную из сторон, где нет стены или тупика
+		if (onlyWayDirection != -1)
+		{
+			target = onlyWayDirection;
+			targetRange = passesDescriptions[onlyWayDirection].range;
+			return;
+		}
+
+		onlyWayDirection = (direction)randomPassNumOfType(passesDescriptions, corridor); //И идём в случайную из сторон, где нет стены или тупика
+		target = onlyWayDirection;
+		targetRange = searchRangeToRandomCorridor(target, passesDescriptions[(int)onlyWayDirection].range);
+	}
 }monster;
+
 
 
 void generateGame()
@@ -393,7 +449,8 @@ void generateGame()
 
 	//monster.pos.x = mapXSize / 2; monster.pos.y = mapYSize / 2;
 	monster.pos = { 1, 1 };
-	//monster.setRandomTarget();
+	refreshCanvas();
+	monster.setFirstTarget();
 	/*for (int i = mapYSize / 2; i != 0; i--)
 	{
 		if (getFromMap(monster.pos.x, i) == none)
@@ -535,7 +592,7 @@ void debugShowMap() //TOFIX
 	{
 		for (int j = 0; j < mapXSize; j++)
 		{
-			if (gameMap[i][j] == wall)
+			if (gameMap[j][i] == wall)
 			{
 				showCube(j, i);
 			}
@@ -555,6 +612,7 @@ void showGameCanvas()
 std::atomic_bool callGameTick = true;
 void Game_Tick()
 {
+	refreshCanvas();
 	srand(time(NULL));
 	Sleep(1000);
 	monster.alifeTick();
