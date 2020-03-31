@@ -185,9 +185,8 @@ public:
 		{
 			unsigned short* temp = ranges;
 			ranges = new unsigned short[rangesCount + 1];
-			memcpy(ranges, temp, rangesCount);
+			memcpy(ranges, temp, rangesCount * sizeof(unsigned short));
 			ranges[rangesCount++] = addedRange;
-			delete[] temp;
 		}
 		void fill(POINT scannedPos, direction scannedDirection)
 		{
@@ -284,11 +283,12 @@ public:
 	{
 		positionInfoStruct positionInfo(monster.pos);
 
-		if (positionInfo.sumOfPasses() == 1)
+		if (positionInfo.sumOfPasses() == 1 && positionInfo.passDescriptions[(int)turnDirectionAround(target)].isPass)
 		{
 			target = turnDirectionAround(target);
 			passDescriptionStruct wayBackDescription = positionInfo.passDescriptions[(int)target];
 			targetRange = wayBackDescription.ranges[rand() % wayBackDescription.rangesCount];
+			return;
 		}
 
 		positionInfo.passDescriptions[(int)turnDirectionAround(target)].isPass = false;
@@ -297,6 +297,7 @@ public:
 			target = (direction)positionInfo.getFirstPass();
 			passDescriptionStruct turnDescription = positionInfo.passDescriptions[(int)target];
 			targetRange = turnDescription.ranges[rand() % turnDescription.rangesCount];
+			return;
 		}
 
 		target = (direction)positionInfo.getRandomPass();
@@ -338,6 +339,7 @@ public:
 			target = (direction)positionInfo.getFirstPass();
 			passDescriptionStruct turnDescription = positionInfo.passDescriptions[(int)target];
 			targetRange = turnDescription.ranges[rand() % turnDescription.rangesCount];
+			return;
 		}
 
 		target = (direction)positionInfo.getRandomPass();
