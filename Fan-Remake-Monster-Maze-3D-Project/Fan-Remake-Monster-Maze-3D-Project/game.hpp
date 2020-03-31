@@ -53,6 +53,7 @@ direction inline turnDirectionAround(direction rolledDirection)
 	case W: return E;
 	}
 }
+POINT door;
 class playerClass
 {
 public:
@@ -354,18 +355,15 @@ void generateGame()
 {
 	generateMap();
 	player.pos.x = player.pos.y = mapXSize - 1;
-	gameMap[mapXSize - 2][mapYSize - 1] = door;
 
-	//monster.pos.x = mapXSize / 2; monster.pos.y = mapYSize / 2;
-	monster.pos = { 1, 1 };
-	refreshCanvas();
-	monster.setFirstTarget();
-	/*for (int i = mapYSize / 2; i != 0; i--)
+	monster.pos.x = mapXSize / 2; monster.pos.y = mapYSize / 2;
+	//monster.pos = { 1, 1 };
+	for (int i = mapYSize / 2; i != 0; i--)
 	{
 		if (getFromMap(monster.pos.x, i) == none)
 		{
 			monster.pos.y = i;
-			return;
+			break;
 		}
 	}
 	for (int i = mapXSize / 2; i != 0; i--)
@@ -373,9 +371,10 @@ void generateGame()
 		if (getFromMap(i, monster.pos.y) == none)
 		{
 			monster.pos.x = i;
-			return;
+			break;
 		}
-	}*/
+	}
+	monster.setFirstTarget();
 }
 
 
@@ -515,6 +514,35 @@ void debugShowMap() //TOFIX
 
 void showGameCanvas()
 {
+	switch (player.viewDirection)
+	{
+	case N:
+		int rangeViewedPass = 0;
+		for (; gameMap[player.pos.x][player.pos.y - rangeViewedPass] != wall; rangeViewedPass++)
+		{
+			if (gameMap[player.pos.x - 1][player.pos.y - rangeViewedPass] == wall)
+				showWall(rangeViewedPass, leftSide);
+			else
+				showNone(rangeViewedPass, leftSide);
+			if (gameMap[player.pos.x + 1][player.pos.y - rangeViewedPass] == wall)
+				showWall(rangeViewedPass, rightSide);
+			else
+				showNone(rangeViewedPass, rightSide);
+		}
+		showWall(rangeViewedPass, frontSide);
+		if (door.x == player.pos.x && player.pos.y - rangeViewedPass == door.y)
+			showDoor(rangeViewedPass);
+		if (monster.pos.x == player.pos.x && player.pos.y - rangeViewedPass == monster.pos.y)
+			showDoor(rangeViewedPass);
+		break;
+	case W:
+		break;
+	case E:
+		break;
+	case S:
+		break;
+	}
+
 	debugShowMap();
 }
 
