@@ -175,225 +175,133 @@ public:
 	{
 		return (targetRange == 0);
 	}
-	typedef enum passTypeStruct
+
+	struct passDescriptionStruct
 	{
-		let = 0,
-		deadEnd,
-		corridor,
-		cameBackFromHere,
-		turn
+		bool isPass = false;
+		unsigned short* ranges;
+		unsigned short rangesCount = 0;
+		void addRange(unsigned short addedRange)
+		{
+			unsigned short* temp = ranges;
+			ranges = new unsigned short[rangesCount + 1];
+			memcpy(ranges, temp, rangesCount);
+			ranges[rangesCount++] = addedRange;
+			delete[] temp;
+		}
+		void fill(POINT scannedPos, direction scannedDirection)
+		{
+			unsigned short range = 1;
+			switch (scannedDirection)
+			{
+			case N:
+				while (gameMap[scannedPos.x][scannedPos.y - range] != wall)
+				{
+					if (gameMap[scannedPos.x - 1][scannedPos.y - range] == none || gameMap[scannedPos.x + 1][scannedPos.y - range] == none)
+					{
+						isPass = true;
+						addRange(range);
+					}
+					range++;
+				}
+				return;
+			case W:
+				while (gameMap[scannedPos.x - range][scannedPos.y] != wall)
+				{
+					if (gameMap[scannedPos.x - range][scannedPos.y - 1] == none || gameMap[scannedPos.x - range][scannedPos.y + 1] == none)
+					{
+						isPass = true;
+						addRange(range);
+					}
+					range++;
+				}
+				return;
+			case E:
+				while (gameMap[scannedPos.x + range][scannedPos.y] != wall)
+				{
+					if (gameMap[scannedPos.x + range][scannedPos.y - 1] == none || gameMap[scannedPos.x + range][scannedPos.y + 1] == none)
+					{
+						isPass = true;
+						addRange(range);
+					}
+					range++;
+				}
+				return;
+			case S:
+				while (gameMap[scannedPos.x][scannedPos.y + range] != wall)
+				{
+					if (gameMap[scannedPos.x - 1][scannedPos.y + range] == none || gameMap[scannedPos.x + 1][scannedPos.y + range] == none)
+					{
+						isPass = true;
+						addRange(range);
+					}
+					range++;
+				}
+				return;
+			}
+		}
 	};
-	struct passDescription
+	struct positionInfoStruct
 	{
-		passTypeStruct passType;
-		unsigned short range;
+		passDescriptionStruct passDescriptions[4];
+		positionInfoStruct(POINT scannedPoint)
+		{
+			for (int i = 0; i < 4; i++)
+			{
+				passDescriptions[i].fill(scannedPoint, (direction)i);
+			}
+		}
+		unsigned short sumOfPasses()
+		{
+			unsigned short res = 0;
+			for (int i = 0; i < 4; i++)
+			{
+				if (passDescriptions[i].isPass)
+					res++;
+			}
+			return res;
+		}
+		int getFirstPass()
+		{
+			for (int i = 0; i < 4; i++)
+			{
+				if (passDescriptions[i].isPass)
+					return i;
+			}
+		}
+		int getRandomPass()
+		{
+			rerandom:
+			for (int i = 0; i < 4; i++)
+			{
+				if (passDescriptions[i].isPass && bool(rand() % 2))
+					return i;
+			}
+			goto rerandom;
+		}
 	};
-	passDescription getPassDescription(direction searchedDirection)
-	{
-		unsigned short rangeToWall = 1;
-		passTypeStruct passType = deadEnd;
-		switch (searchedDirection)
-		{
-		case N:
-			if (gameMap[pos.x][pos.y - 1] == wall)
-				return { let, 0 };
-			while (gameMap[pos.x][pos.y - rangeToWall] != wall)
-			{
-				if (passType == deadEnd && (gameMap[pos.x - 1][pos.y - rangeToWall] == none || gameMap[pos.x + 1][pos.y - rangeToWall] == none))
-				{
-					if (gameMap[pos.x][pos.y - rangeToWall - 1] == wall)
-						passType = turn;
-					else
-						passType = corridor;
-				}
-				rangeToWall++;
-			}
-			break;
-		case W:
-			if (gameMap[pos.x - 1][pos.y] == wall)
-				return { let, 0 };
-			while (gameMap[pos.x - rangeToWall][pos.y] != wall)
-			{
-				if (passType == deadEnd && (gameMap[pos.x - rangeToWall][pos.y - 1] == none || gameMap[pos.x - rangeToWall][pos.y + 1] == none))
-				{
-					if (gameMap[pos.x - rangeToWall - 1][pos.y] == wall)
-						passType = turn;
-					else
-						passType = corridor;
-				}
-				rangeToWall++;
-			}
-			break;
-		case E:
-			if (gameMap[pos.x + 1][pos.y] == wall)
-				return { let, 0 };
-			while (gameMap[pos.x + rangeToWall][pos.y] != wall)
-			{
-				if (passType == deadEnd && (gameMap[pos.x + rangeToWall][pos.y - 1] == none || gameMap[pos.x + rangeToWall][pos.y + 1] == none))
-				{
-					if (gameMap[pos.x + rangeToWall + 1][pos.y] == wall)
-						passType = turn;
-					else
-						passType = corridor;
-				}
-				rangeToWall++;
-			}
-			break;
-		case S:
-			if (gameMap[pos.x][pos.y + 1] == wall)
-				return { let, 0 };
-			while (gameMap[pos.x][pos.y + rangeToWall] != wall)
-			{
-				if (passType == deadEnd && (gameMap[pos.x - 1][pos.y + rangeToWall] == none || gameMap[pos.x + 1][pos.y + rangeToWall] == none))
-				{
-					if (gameMap[pos.x][pos.y + rangeToWall + 1] == wall)
-						passType = turn;
-					else
-						passType = corridor;
-				}
-				rangeToWall++;
-			}
-			break;
-		}
-		return { passType, --rangeToWall };
-	}
-	unsigned short searchRangeToRandomCorridor(direction searchedDirection, int range) //range to random corridor
-	{
-	reRandom:
-		switch (searchedDirection)
-		{
-		case N:
-			for (int i = 1; i <= range; i++)
-			{
-				if ((bool)rand() % 2 && (gameMap[pos.x - 1][pos.y - i] == none || gameMap[pos.x + 1][pos.y - i] == none))
-				{
-					return i;
-				}
-			}
-			goto reRandom;
-		case W:
-			for (int i = 1; i <= range; i++)
-			{
-				if ((bool)rand() % 2 && (gameMap[pos.x - i][pos.y - 1] == none || gameMap[pos.x - i][pos.y + 1] == none))
-				{
-					return i;
-				}
-			}
-			goto reRandom;
-		case E:
-			for (int i = 1; i <= range; i++)
-			{
-				if ((bool)rand() % 2 && (gameMap[pos.x + i][pos.y - 1] == none || gameMap[pos.x + i][pos.y + 1] == none))
-				{
-					return i;
-				}
-			}
-			goto reRandom;
-		case S:
-			for (int i = 1; i <= range; i++)
-			{
-				if ((bool)rand() % 2 && (gameMap[pos.x - 1][pos.y + i] == none || gameMap[pos.x + 1][pos.y + i] == none))
-				{
-					return i;
-				}
-			}
-			goto reRandom;
-		}
-	}
-	int firstPassNumOfType(passDescription passesDescriptions[4], passTypeStruct searchedPassType)
-	{
-		for (int i = 0; i < 4; i++)
-		{
-			if (passesDescriptions[i].passType == searchedPassType)
-			{
-				return i;
-			}
-		}
-		return -1;
-	}
-	int randomPassNumOfType(passDescription passesDescriptions[4], passTypeStruct searchedPassType)
-	{
-		int numbersOfPasses[4];
-		int numbersOfPassesCount = 0;
-
-		for (int i = 0; i < 4; i++)
-		{
-			if (passesDescriptions[i].passType == searchedPassType)
-			{
-				numbersOfPasses[numbersOfPassesCount++] = i;
-			}
-		}
-
-		if (numbersOfPassesCount == 0)
-			return -1;
-
-		while (true)
-		{
-			for (int i = 0; i < numbersOfPassesCount; i++)
-			{
-				if (bool(rand() % 2))
-				{
-					return numbersOfPasses[i];
-				}
-			}
-		}
-	}
 	void setRandomTarget()
 	{
-		passDescription passesDescriptions[4] = { getPassDescription(N), getPassDescription(W), getPassDescription(E), getPassDescription(S) }; //Получаем информацию о окружении монстра
-		unsigned short deadEndsCount = 0;
-		unsigned short letsCount = 0;
-		unsigned short coridorsCount = 0;
-		unsigned short turnsCount = 0;
-		unsigned short corridorsFromWhichWeReturnedCount = 0;
+		positionInfoStruct positionInfo(monster.pos);
 
-		for (int i = 0; i < 4; i++)
+		if (positionInfo.sumOfPasses() == 1)
 		{
-			switch (passesDescriptions[i].passType)
-			{
-			case let:
-				letsCount++;
-				break;
-			case deadEnd:
-				deadEndsCount++;
-				break;
-			case corridor:
-				coridorsCount++;
-				break;
-			case turn:
-				turnsCount++;
-				break;
-			}
+			target = turnDirectionAround(target);
+			passDescriptionStruct wayBackDescription = positionInfo.passDescriptions[(int)target];
+			targetRange = wayBackDescription.ranges[rand() % wayBackDescription.rangesCount];
 		}
 
-		if (letsCount + deadEndsCount + corridorsFromWhichWeReturnedCount == 3) //Если сумма сторон, на которых стены и тупики = 3, значит единственный путь - вернутся
+		positionInfo.passDescriptions[(int)turnDirectionAround(target)].isPass = false;
+		if (positionInfo.sumOfPasses() == 1)
 		{
-			direction onlyWayDirection = turnDirectionAround(target);
-			target = onlyWayDirection;
-			if (passesDescriptions[(int)onlyWayDirection].passType == turn)
-				targetRange = passesDescriptions[(int)onlyWayDirection].range;
-			else
-				targetRange = searchRangeToRandomCorridor(target, passesDescriptions[(int)onlyWayDirection].range);
-			return;
+			target = (direction)positionInfo.getFirstPass();
+			passDescriptionStruct turnDescription = positionInfo.passDescriptions[(int)target];
+			targetRange = turnDescription.ranges[rand() % turnDescription.rangesCount];
 		}
 
-		passesDescriptions[(int)turnDirectionAround(target)].passType = cameBackFromHere; //Место из которого мы пришли - точно корридор
-		corridorsFromWhichWeReturnedCount++;
-
-		if (letsCount + deadEndsCount + corridorsFromWhichWeReturnedCount == 3) //Если сумма сторон, на которых стены, тупики и из которых мы пришли = 3, значит единственный путь - последний оставшийся
-		{
-			direction onlyCorridorDirection = (direction)firstPassNumOfType(passesDescriptions, turn); //TOFIX *random
-			target = onlyCorridorDirection;
-			if (onlyCorridorDirection != -1)
-				targetRange = passesDescriptions[(int)onlyCorridorDirection].range;
-			else
-				targetRange = searchRangeToRandomCorridor(target, passesDescriptions[(int)onlyCorridorDirection].range);
-			return;
-		}
-
-		direction randomCorridorDirection = (direction)randomPassNumOfType(passesDescriptions, corridor); //Оставшийся вариант - проходов несколько. Идём в случайный из
-		target = randomCorridorDirection;
-		targetRange = searchRangeToRandomCorridor(target, passesDescriptions[(int)randomCorridorDirection].range);
+		target = (direction)positionInfo.getRandomPass();
+		passDescriptionStruct turnDescription = positionInfo.passDescriptions[(int)target];
+		targetRange = turnDescription.ranges[rand() % turnDescription.rangesCount];
 	}
 	void moveToTarget()
 	{
@@ -423,19 +331,18 @@ public:
 	}
 	void setFirstTarget()
 	{
-		passDescription passesDescriptions[4] = { getPassDescription(N), getPassDescription(W), getPassDescription(E), getPassDescription(S) }; //Получаем информацию о окружении монстра
+		positionInfoStruct positionInfo(monster.pos);
 
-		direction onlyWayDirection = (direction)randomPassNumOfType(passesDescriptions, turn); //И идём в случайную из сторон, где нет стены или тупика
-		if (onlyWayDirection != -1)
+		if (positionInfo.sumOfPasses() == 1)
 		{
-			target = onlyWayDirection;
-			targetRange = passesDescriptions[onlyWayDirection].range;
-			return;
+			target = (direction)positionInfo.getFirstPass();
+			passDescriptionStruct turnDescription = positionInfo.passDescriptions[(int)target];
+			targetRange = turnDescription.ranges[rand() % turnDescription.rangesCount];
 		}
 
-		onlyWayDirection = (direction)randomPassNumOfType(passesDescriptions, corridor); //И идём в случайную из сторон, где нет стены или тупика
-		target = onlyWayDirection;
-		targetRange = searchRangeToRandomCorridor(target, passesDescriptions[(int)onlyWayDirection].range);
+		target = (direction)positionInfo.getRandomPass();
+		passDescriptionStruct turnDescription = positionInfo.passDescriptions[(int)target];
+		targetRange = turnDescription.ranges[rand() % turnDescription.rangesCount];
 	}
 }monster;
 
