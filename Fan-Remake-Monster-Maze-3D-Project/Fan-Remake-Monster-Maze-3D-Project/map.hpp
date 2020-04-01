@@ -12,7 +12,7 @@ block getFromMap(unsigned int x, unsigned int y)
 {
 	return gameMap[y][x];
 }
-constexpr POINT doorPos = { mapXSize - 2, mapYSize - 1 };
+constexpr POINT door = { mapXSize - 2, mapYSize - 1 };
 
 bool deadEnd(int x, int y) {
 	int a = 0;

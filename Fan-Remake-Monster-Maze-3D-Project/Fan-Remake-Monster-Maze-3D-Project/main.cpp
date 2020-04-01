@@ -140,6 +140,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 				player.moveForward();
 				if (monster.catchPlayer())
 					presentGameState = lose;
+				if (player.inDoor())
+					presentGameState = win;
 				break;
 			case KB_E:
 				player.turnRight();

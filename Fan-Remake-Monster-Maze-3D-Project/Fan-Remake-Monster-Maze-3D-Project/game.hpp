@@ -1,11 +1,8 @@
 #pragma once
-#include <iostream>
 #include <wingdi.h>
 #include <time.h>
-#include <conio.h>
 #include <atomic>
 #include "map.hpp"
-using namespace std;
 #include "output.hpp"
 #define pointsEqual(f, s) (((f).x == (s).x) && ((f).y == (s).y))
 
@@ -19,6 +16,8 @@ typedef enum direction {
 //-N-
 //W-E
 //-S-
+
+constexpr unsigned int monsterDelay = 1000;
 
 direction inline turnDirectionLeft(direction rolledDirection)
 {
@@ -53,7 +52,6 @@ direction inline turnDirectionAround(direction rolledDirection)
 	case W: return E;
 	}
 }
-POINT door;
 class playerClass
 {
 public:
@@ -100,26 +98,26 @@ public:
 	}
 	bool inDoor()
 	{
-		return pointsEqual(pos, doorPos);
+		return pointsEqual(pos, door);
 	}
 }player;
 void showCompas() //TODO
 {
-	setTo(1, 1);
+	/*setTo(1, 1);
 	cout << '-' << player.viewDirection << '-';
 	setTo(1, 2);
 	cout << turnDirectionLeft(player.viewDirection) << '#' << turnDirectionRight(player.viewDirection);
 	setTo(1, 3);
-	cout << '-' << turnDirectionAround(player.viewDirection) << '-';
+	cout << '-' << turnDirectionAround(player.viewDirection) << '-';*/
 }
 void showMap() //TODO
 {
-	setTo(1, 1);
+	/*setTo(1, 1);
 	cout << '-' << player.viewDirection << '-';
 	setTo(1, 2);
 	cout << turnDirectionLeft(player.viewDirection) << '#' << turnDirectionRight(player.viewDirection);
 	setTo(1, 3);
-	cout << '-' << turnDirectionAround(player.viewDirection) << '-';
+	cout << '-' << turnDirectionAround(player.viewDirection) << '-';*/
 }
 
 class monsterClass
@@ -282,26 +280,28 @@ public:
 	};
 	void setRandomTarget()
 	{
-		positionInfoStruct positionInfo(monster.pos);
+		positionInfoStruct positionInfo(monster.pos); //Получаем всю информацию о окружении монстра
 
-		if (positionInfo.sumOfPasses() == 1 && positionInfo.passDescriptions[(int)turnDirectionAround(target)].isPass)
+		if (positionInfo.sumOfPasses() == 1 && positionInfo.passDescriptions[(int)turnDirectionAround(target)].isPass) //Если место откуда мы вернулись не тупик, и других путей нет...
 		{
-			target = turnDirectionAround(target);
+			target = turnDirectionAround(target); //Разворачиваемся
 			passDescriptionStruct wayBackDescription = positionInfo.passDescriptions[(int)target];
 			targetRange = wayBackDescription.ranges[rand() % wayBackDescription.rangesCount];
 			return;
 		}
 
+		//Если путей, учитывая обратный, несколько...
 		positionInfo.passDescriptions[(int)turnDirectionAround(target)].isPass = false;
-		if (positionInfo.sumOfPasses() == 1)
+		if (positionInfo.sumOfPasses() == 1) //Если путей, не учитывая обратный, только один...
 		{
-			target = (direction)positionInfo.getFirstPass();
+			target = (direction)positionInfo.getFirstPass(); //Идём в него
 			passDescriptionStruct turnDescription = positionInfo.passDescriptions[(int)target];
 			targetRange = turnDescription.ranges[rand() % turnDescription.rangesCount];
 			return;
 		}
 
-		target = (direction)positionInfo.getRandomPass();
+		//Если путей, не учитывая обратный, несколько...
+		target = (direction)positionInfo.getRandomPass(); //Идём в случайный из них
 		passDescriptionStruct turnDescription = positionInfo.passDescriptions[(int)target];
 		targetRange = turnDescription.ranges[rand() % turnDescription.rangesCount];
 	}
@@ -333,17 +333,18 @@ public:
 	}
 	void setFirstTarget()
 	{
-		positionInfoStruct positionInfo(monster.pos);
+		positionInfoStruct positionInfo(monster.pos); //Получаем всю информацию о окружении монстра
 
-		if (positionInfo.sumOfPasses() == 1)
+		if (positionInfo.sumOfPasses() == 1) //Если путь из нынешней точки, где монстр появился, только один...
 		{
-			target = (direction)positionInfo.getFirstPass();
+			target = (direction)positionInfo.getFirstPass(); //Идём в него
 			passDescriptionStruct turnDescription = positionInfo.passDescriptions[(int)target];
 			targetRange = turnDescription.ranges[rand() % turnDescription.rangesCount];
 			return;
 		}
 
-		target = (direction)positionInfo.getRandomPass();
+		//Если таких путей несколько...
+		target = (direction)positionInfo.getRandomPass(); //Идём в случайный из них
 		passDescriptionStruct turnDescription = positionInfo.passDescriptions[(int)target];
 		targetRange = turnDescription.ranges[rand() % turnDescription.rangesCount];
 	}
@@ -357,7 +358,6 @@ void generateGame()
 	player.pos.x = player.pos.y = mapXSize - 1;
 
 	monster.pos.x = mapXSize / 2; monster.pos.y = mapYSize / 2;
-	//monster.pos = { 1, 1 };
 	for (int i = mapYSize / 2; i != 0; i--)
 	{
 		if (getFromMap(monster.pos.x, i) == none)
@@ -378,123 +378,10 @@ void generateGame()
 }
 
 
-POINT inline cubeDPoint(LONG num) //TODOC
-{
-	LONG temp = screenSize.y / 48 * num;
-	return { temp, temp };
-}
-POINT inline cubePoint(LONG fNum, LONG sNum)
-{
-	return { screenSize.y / 48 * fNum - 1, screenSize.y / 48 * sNum };
-}
-POINT inline cubePointVerticalMirrored(LONG num)
-{
-	return { screenSize.y / 48 * num - 1, screenSize.y / 48 * (48 - num) };
-}
-POINT inline cubePointHorizontalMirrored(LONG fNum, LONG sNum)
-{
-	return { screenSize.y / 48 * (48 - fNum) - 1, screenSize.y / 48 * sNum };
-}
-POINT inline cubePointVerticalAndHorizontalMirrored(LONG num)
-{
-	return { screenSize.y / 48 * (48 - num) - 1, screenSize.y / 48 * (48 - num) };
-}
-VERTICAL_TRAPEZE inline cubeSquareInCenter(LONG size)
-{
-	return {
-		{ screenSize.y / 48 * (24 - size) - 1, screenSize.y / 48 * (24 - size) },
-		{ screenSize.y / 48 * (24 - size) - 1, screenSize.y / 48 * (24 + size) },
-		{ screenSize.y / 48 * (24 + size) - 1, screenSize.y / 48 * (24 + size) },
-		{ screenSize.y / 48 * (24 + size) - 1, screenSize.y / 48 * (24 - size) }
-	};
-}
-typedef enum sidesEnum {
-	leftSide = 0,
-	rightSide,
-	frontSide
-};
-unsigned short wall2DSizes[6] = { 2, 8, 6, 4, 2, 1 };
-unsigned short factorialSizes2DWalls[7] = { 0, 2, 2 + 8, 2 + 8 + 6, 2 + 8 + 6 + 4, 2 + 8 + 6 + 4 + 2, 2 + 8 + 6 + 4 + 2 + 1 };
-VERTICAL_TRAPEZE getTrapezeCoords(short range, sidesEnum side)
-{
-	if (side == frontSide)
-	{
-		switch (range) //TOFIX
-		{
-		case 1:
-			return cubeSquareInCenter(1); //1
-		case 2:
-			return cubeSquareInCenter(1 + 1); //2
-		case 3:
-			return cubeSquareInCenter(1 + 1 + 2); //4
-		case 4:
-			return cubeSquareInCenter(1 + 1 + 2 + 4); //8
-		case 5:
-			return cubeSquareInCenter(1 + 1 + 2 + 4 + 6); //14
-		case 6:
-			return cubeSquareInCenter(1 + 1 + 2 + 4 + 6 + 8); //22
-		}
-	}
-	else if (side == leftSide)
-		return { cubePoint(factorialSizes2DWalls[range - 1], factorialSizes2DWalls[range - 1]), cubePointVerticalMirrored(factorialSizes2DWalls[range - 1]), cubePointVerticalMirrored(factorialSizes2DWalls[range]), cubePoint(factorialSizes2DWalls[range], factorialSizes2DWalls[range]) };
-	else if (side == rightSide)
-		return { cubePointHorizontalMirrored(factorialSizes2DWalls[range - 1], factorialSizes2DWalls[range - 1]), cubePointVerticalAndHorizontalMirrored(factorialSizes2DWalls[range - 1]), cubePointVerticalAndHorizontalMirrored(factorialSizes2DWalls[range]), cubePointHorizontalMirrored(factorialSizes2DWalls[range], factorialSizes2DWalls[range]) };
-}
-void inline showWall(short range, sidesEnum side)
-{
-	trapeze(getTrapezeCoords(range, side), wallBrush);
-}
-int cubePos(int sizeInBlocks)
-{
-	return (screenSize.y / 48) * sizeInBlocks;
-}
-void inline showNone(short range, sidesEnum side)
-{
-	VERTICAL_TRAPEZE wallPrototype = getTrapezeCoords(range, side);
-	wallPrototype.biggestBaseF.y = wallPrototype.smallestBaseF.y;
-	wallPrototype.biggestBaseS.y = wallPrototype.smallestBaseS.y;
-	trapeze(wallPrototype, noneBrush);
-}
-void inline showMonster(short range) //TOFIX
-{
-	VERTICAL_TRAPEZE wallPrototype = getTrapezeCoords(range, frontSide);
-	HBRUSH monsterBrush = CreateSolidBrush(RGB(255, 0, 0));
-	wallPrototype.biggestBaseF.y = wallPrototype.smallestBaseF.y;
-	wallPrototype.biggestBaseS.y = wallPrototype.smallestBaseS.y;
-	trapeze(wallPrototype, monsterBrush);
-}
-void inline showDoor(short range) //TOFIX
-{
-	VERTICAL_TRAPEZE wallPrototype = getTrapezeCoords(range, frontSide);
-	HBRUSH doorBrush = CreateSolidBrush(RGB(0, 255, 0));
-	wallPrototype.biggestBaseF.y = wallPrototype.smallestBaseF.y;
-	wallPrototype.biggestBaseS.y = wallPrototype.smallestBaseS.y;
-	trapeze(wallPrototype, doorBrush);
-}
-//debug zone
-void inline showCube(unsigned int x, unsigned int y)
-{
-	Rectangle(mainWindowHDC, cubePos(x), cubePos(y), cubePos(x + 1), cubePos(y + 1));
-}
-void inline showCube(unsigned int x, unsigned int y, COLORREF color)
-{
-	HBRUSH oldBrush = (HBRUSH)SelectObject(mainWindowHDC, (HBRUSH)CreateSolidBrush(color));
-	Rectangle(mainWindowHDC, cubePos(x), cubePos(y), cubePos(x + 1), cubePos(y + 1));
-	SelectObject(mainWindowHDC, oldBrush);
-}
-void inline showCube(POINT pos)
-{
-	Rectangle(mainWindowHDC, cubePos(pos.x), cubePos(pos.y), cubePos(pos.x + 1), cubePos(pos.y + 1));
-}
-void inline showCube(POINT pos, COLORREF color)
-{
-	HBRUSH oldBrush = (HBRUSH)SelectObject(mainWindowHDC, (HBRUSH)CreateSolidBrush(color));
-	Rectangle(mainWindowHDC, cubePos(pos.x), cubePos(pos.y), cubePos(pos.x + 1), cubePos(pos.y + 1));
-	SelectObject(mainWindowHDC, oldBrush);
-}
+//TOLIB
 void debugShowMap() //TOFIX
 {
-	HBRUSH hOldBrush = (HBRUSH)SelectObject(mainWindowHDC, (HBRUSH)CreateSolidBrush(RGB(rand()%255, rand() % 255, rand() % 255)));
+	HBRUSH hOldBrush = (HBRUSH)SelectObject(mainWindowHDC, (HBRUSH)CreateSolidBrush(RGB(rand() % 255, rand() % 255, rand() % 255)));
 
 	for (int i = 0; i < mapYSize; i++)
 	{
@@ -514,10 +401,10 @@ void debugShowMap() //TOFIX
 
 void showGameCanvas()
 {
+	int rangeViewedPass = 0;
 	switch (player.viewDirection)
 	{
 	case N:
-		int rangeViewedPass = 0;
 		for (; gameMap[player.pos.x][player.pos.y - rangeViewedPass] != wall; rangeViewedPass++)
 		{
 			if (gameMap[player.pos.x - 1][player.pos.y - rangeViewedPass] == wall)
@@ -536,22 +423,71 @@ void showGameCanvas()
 			showDoor(rangeViewedPass);
 		break;
 	case W:
+		for (; gameMap[player.pos.x - rangeViewedPass][player.pos.y] != wall; rangeViewedPass++)
+		{
+			if (gameMap[player.pos.x - rangeViewedPass][player.pos.y - 1] == wall)
+				showWall(rangeViewedPass, leftSide);
+			else
+				showNone(rangeViewedPass, leftSide);
+			if (gameMap[player.pos.x - rangeViewedPass][player.pos.y + 1] == wall)
+				showWall(rangeViewedPass, rightSide);
+			else
+				showNone(rangeViewedPass, rightSide);
+		}
+		showWall(rangeViewedPass, frontSide);
+		if (door.y == player.pos.y && player.pos.x - rangeViewedPass == door.x)
+			showDoor(rangeViewedPass);
+		if (monster.pos.y == player.pos.y && player.pos.x - rangeViewedPass == monster.pos.x)
+			showDoor(rangeViewedPass);
 		break;
 	case E:
+		for (; gameMap[player.pos.x + rangeViewedPass][player.pos.y] != wall; rangeViewedPass++)
+		{
+			if (gameMap[player.pos.x + rangeViewedPass][player.pos.y + 1] == wall)
+				showWall(rangeViewedPass, leftSide);
+			else
+				showNone(rangeViewedPass, leftSide);
+			if (gameMap[player.pos.x + rangeViewedPass][player.pos.y - 1] == wall)
+				showWall(rangeViewedPass, rightSide);
+			else
+				showNone(rangeViewedPass, rightSide);
+		}
+		showWall(rangeViewedPass, frontSide);
+		if (door.y == player.pos.y && player.pos.x + rangeViewedPass == door.x)
+			showDoor(rangeViewedPass);
+		if (monster.pos.y == player.pos.y && player.pos.x + rangeViewedPass == monster.pos.x)
+			showDoor(rangeViewedPass);
 		break;
 	case S:
+		for (; gameMap[player.pos.x][player.pos.y + rangeViewedPass] != wall; rangeViewedPass++)
+		{
+			if (gameMap[player.pos.x + 1][player.pos.y + rangeViewedPass] == wall)
+				showWall(rangeViewedPass, leftSide);
+			else
+				showNone(rangeViewedPass, leftSide);
+			if (gameMap[player.pos.x - 1][player.pos.y + rangeViewedPass] == wall)
+				showWall(rangeViewedPass, rightSide);
+			else
+				showNone(rangeViewedPass, rightSide);
+		}
+		showWall(rangeViewedPass, frontSide);
+		if (door.x == player.pos.x && player.pos.y + rangeViewedPass == door.y)
+			showDoor(rangeViewedPass);
+		if (monster.pos.x == player.pos.x && player.pos.y + rangeViewedPass == monster.pos.y)
+			showDoor(rangeViewedPass);
 		break;
 	}
 
 	debugShowMap();
 }
 
+
 std::atomic_bool callGameTick = true;
 void Game_Tick()
 {
 	refreshCanvas();
 	srand(time(NULL));
-	Sleep(1000);
+	Sleep(monsterDelay);
 	monster.alifeTick();
 	refreshCanvas();
 	if (monster.catchPlayer())
