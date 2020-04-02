@@ -223,6 +223,9 @@ void Game_Main()
 		monsterLogicThread.detach();
 		callGameTick = false;
 	}
+	else if(presentGameState == lose) {
+		refreshCanvas();
+	}
 }
 
 void Game_Shitdown()

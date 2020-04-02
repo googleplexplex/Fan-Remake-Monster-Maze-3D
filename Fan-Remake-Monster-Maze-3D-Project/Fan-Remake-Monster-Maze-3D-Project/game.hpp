@@ -68,13 +68,13 @@ public:
 		case S: goTo.y++; break;
 		}
 
-		if (getFromMap(goTo.x, goTo.y) != wall)
+		if (gameMap[goTo.x][goTo.y] != wall)
 		{
 			pos = goTo;
-		}
 
-		if (player.inDoor())
-			presentGameState = win;
+			if (player.inDoor())
+				presentGameState = win;
+		}
 
 		refreshCanvas();
 	}
@@ -355,12 +355,11 @@ public:
 void generateGame()
 {
 	generateMap();
-	player.pos.x = player.pos.y = mapXSize - 1;
-
-	monster.pos.x = mapXSize / 2; monster.pos.y = mapYSize / 2;
+	player.pos.x = player.pos.y = 1; //TOFIX
+	monster.pos = { mapXSize / 2, mapYSize / 2 };
 	for (int i = mapYSize / 2; i != 0; i--)
 	{
-		if (getFromMap(monster.pos.x, i) == none)
+		if (gameMap[monster.pos.x][i] == none)
 		{
 			monster.pos.y = i;
 			break;
@@ -368,7 +367,7 @@ void generateGame()
 	}
 	for (int i = mapXSize / 2; i != 0; i--)
 	{
-		if (getFromMap(i, monster.pos.y) == none)
+		if (gameMap[i][monster.pos.y] == none)
 		{
 			monster.pos.x = i;
 			break;
@@ -401,11 +400,12 @@ void debugShowMap() //TOFIX
 
 void showGameCanvas()
 {
+	debugShowMap();
 	int rangeViewedPass = 0;
 	switch (player.viewDirection)
 	{
 	case N:
-		for (; gameMap[player.pos.x][player.pos.y - rangeViewedPass] != wall; rangeViewedPass++)
+		for (; gameMap[player.pos.x][player.pos.y - rangeViewedPass] != wall && rangeViewedPass < 6; rangeViewedPass++)
 		{
 			if (gameMap[player.pos.x - 1][player.pos.y - rangeViewedPass] == wall)
 				showWall(rangeViewedPass, leftSide);
@@ -416,50 +416,47 @@ void showGameCanvas()
 			else
 				showNone(rangeViewedPass, rightSide);
 		}
-		showWall(rangeViewedPass, frontSide);
 		if (door.x == player.pos.x && player.pos.y - rangeViewedPass == door.y)
 			showDoor(rangeViewedPass);
 		if (monster.pos.x == player.pos.x && player.pos.y - rangeViewedPass == monster.pos.y)
 			showDoor(rangeViewedPass);
 		break;
 	case W:
-		for (; gameMap[player.pos.x - rangeViewedPass][player.pos.y] != wall; rangeViewedPass++)
+		for (; gameMap[player.pos.x - rangeViewedPass][player.pos.y] != wall && rangeViewedPass < 6; rangeViewedPass++)
 		{
-			if (gameMap[player.pos.x - rangeViewedPass][player.pos.y - 1] == wall)
+			if (gameMap[player.pos.x - rangeViewedPass][player.pos.y + 1] == wall)
 				showWall(rangeViewedPass, leftSide);
 			else
 				showNone(rangeViewedPass, leftSide);
-			if (gameMap[player.pos.x - rangeViewedPass][player.pos.y + 1] == wall)
+			if (gameMap[player.pos.x - rangeViewedPass][player.pos.y - 1] == wall)
 				showWall(rangeViewedPass, rightSide);
 			else
 				showNone(rangeViewedPass, rightSide);
 		}
-		showWall(rangeViewedPass, frontSide);
 		if (door.y == player.pos.y && player.pos.x - rangeViewedPass == door.x)
 			showDoor(rangeViewedPass);
 		if (monster.pos.y == player.pos.y && player.pos.x - rangeViewedPass == monster.pos.x)
 			showDoor(rangeViewedPass);
 		break;
 	case E:
-		for (; gameMap[player.pos.x + rangeViewedPass][player.pos.y] != wall; rangeViewedPass++)
+		for (; gameMap[player.pos.x + rangeViewedPass][player.pos.y] != wall && rangeViewedPass < 6; rangeViewedPass++)
 		{
-			if (gameMap[player.pos.x + rangeViewedPass][player.pos.y + 1] == wall)
+			if (gameMap[player.pos.x + rangeViewedPass][player.pos.y - 1] == wall)
 				showWall(rangeViewedPass, leftSide);
 			else
 				showNone(rangeViewedPass, leftSide);
-			if (gameMap[player.pos.x + rangeViewedPass][player.pos.y - 1] == wall)
+			if (gameMap[player.pos.x + rangeViewedPass][player.pos.y + 1] == wall)
 				showWall(rangeViewedPass, rightSide);
 			else
 				showNone(rangeViewedPass, rightSide);
 		}
-		showWall(rangeViewedPass, frontSide);
 		if (door.y == player.pos.y && player.pos.x + rangeViewedPass == door.x)
 			showDoor(rangeViewedPass);
 		if (monster.pos.y == player.pos.y && player.pos.x + rangeViewedPass == monster.pos.x)
 			showDoor(rangeViewedPass);
 		break;
 	case S:
-		for (; gameMap[player.pos.x][player.pos.y + rangeViewedPass] != wall; rangeViewedPass++)
+		for (; gameMap[player.pos.x][player.pos.y + rangeViewedPass] != wall && rangeViewedPass < 6; rangeViewedPass++)
 		{
 			if (gameMap[player.pos.x + 1][player.pos.y + rangeViewedPass] == wall)
 				showWall(rangeViewedPass, leftSide);
@@ -470,15 +467,16 @@ void showGameCanvas()
 			else
 				showNone(rangeViewedPass, rightSide);
 		}
-		showWall(rangeViewedPass, frontSide);
 		if (door.x == player.pos.x && player.pos.y + rangeViewedPass == door.y)
 			showDoor(rangeViewedPass);
 		if (monster.pos.x == player.pos.x && player.pos.y + rangeViewedPass == monster.pos.y)
 			showDoor(rangeViewedPass);
 		break;
 	}
-
-	debugShowMap();
+	if (rangeViewedPass < 6)
+		showWall(6 - rangeViewedPass + 1, frontSide);
+	else
+		showNone(1, frontSide);
 }
 
 

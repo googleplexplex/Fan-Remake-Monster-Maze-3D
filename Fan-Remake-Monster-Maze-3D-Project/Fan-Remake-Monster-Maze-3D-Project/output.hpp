@@ -84,7 +84,7 @@ typedef enum sidesEnum {
 	frontSide
 };
 unsigned short wall2DSizes[6] = { 2, 8, 6, 4, 2, 1 };
-unsigned short factorialSizes2DWalls[7] = { 0, 2, 2 + 8, 2 + 8 + 6, 2 + 8 + 6 + 4, 2 + 8 + 6 + 4 + 2, 2 + 8 + 6 + 4 + 2 + 1 };
+unsigned short factorialSizes2DWalls[8] = { 0, 2, 2 + 8, 2 + 8 + 6, 2 + 8 + 6 + 4, 2 + 8 + 6 + 4 + 2, 2 + 8 + 6 + 4 + 2 + 1 };
 VERTICAL_TRAPEZE getTrapezeCoords(short range, sidesEnum side)
 {
 	if (side == frontSide)
@@ -106,9 +106,9 @@ VERTICAL_TRAPEZE getTrapezeCoords(short range, sidesEnum side)
 		}
 	}
 	else if (side == leftSide)
-		return { cubePoint(factorialSizes2DWalls[range - 1], factorialSizes2DWalls[range - 1]), cubePointVerticalMirrored(factorialSizes2DWalls[range - 1]), cubePointVerticalMirrored(factorialSizes2DWalls[range]), cubePoint(factorialSizes2DWalls[range], factorialSizes2DWalls[range]) };
+		return { cubePoint(factorialSizes2DWalls[range], factorialSizes2DWalls[range]), cubePointVerticalMirrored(factorialSizes2DWalls[range]), cubePointVerticalMirrored(factorialSizes2DWalls[range + 1]), cubePoint(factorialSizes2DWalls[range + 1], factorialSizes2DWalls[range + 1]) };
 	else if (side == rightSide)
-		return { cubePointHorizontalMirrored(factorialSizes2DWalls[range - 1], factorialSizes2DWalls[range - 1]), cubePointVerticalAndHorizontalMirrored(factorialSizes2DWalls[range - 1]), cubePointVerticalAndHorizontalMirrored(factorialSizes2DWalls[range]), cubePointHorizontalMirrored(factorialSizes2DWalls[range], factorialSizes2DWalls[range]) };
+		return { cubePointHorizontalMirrored(factorialSizes2DWalls[range], factorialSizes2DWalls[range]), cubePointVerticalAndHorizontalMirrored(factorialSizes2DWalls[range]), cubePointVerticalAndHorizontalMirrored(factorialSizes2DWalls[range + 1]), cubePointHorizontalMirrored(factorialSizes2DWalls[range + 1], factorialSizes2DWalls[range + 1]) };
 }
 void inline showWall(short range, sidesEnum side)
 {
