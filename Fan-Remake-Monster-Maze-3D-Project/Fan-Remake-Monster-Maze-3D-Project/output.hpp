@@ -127,7 +127,7 @@ void inline showNone(short range, sidesEnum side)
 }
 void inline showMonster(short range) //TOFIX
 {
-	VERTICAL_TRAPEZE wallPrototype = getTrapezeCoords(range, frontSide);
+	VERTICAL_TRAPEZE wallPrototype = getTrapezeCoords(6 - range + 1, frontSide);
 	HBRUSH monsterBrush = CreateSolidBrush(RGB(255, 0, 0));
 	wallPrototype.biggestBaseF.y = wallPrototype.smallestBaseF.y;
 	wallPrototype.biggestBaseS.y = wallPrototype.smallestBaseS.y;
@@ -135,7 +135,7 @@ void inline showMonster(short range) //TOFIX
 }
 void inline showDoor(short range) //TOFIX
 {
-	VERTICAL_TRAPEZE wallPrototype = getTrapezeCoords(range, frontSide);
+	VERTICAL_TRAPEZE wallPrototype = getTrapezeCoords(6 - range + 1, frontSide);
 	HBRUSH doorBrush = CreateSolidBrush(RGB(0, 255, 0));
 	wallPrototype.biggestBaseF.y = wallPrototype.smallestBaseF.y;
 	wallPrototype.biggestBaseS.y = wallPrototype.smallestBaseS.y;

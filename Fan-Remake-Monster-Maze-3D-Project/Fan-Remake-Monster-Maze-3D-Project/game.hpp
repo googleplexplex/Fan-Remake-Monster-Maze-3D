@@ -126,49 +126,50 @@ public:
 	POINT pos;
 	direction target = null;
 	unsigned short targetRange = 0;
-	direction seesPlayer() //return null, if false, direction if true
+	std::pair<direction, unsigned short> seesPlayer() //return null, if false, direction if true
 	{
+		unsigned short rangeToPlayer = 1;
 		if (player.pos.x == monster.pos.x)
 		{
 			if (player.pos.y > monster.pos.y)
 			{
-				for (int i = monster.pos.y + 1; i < player.pos.y; i++)
+				for (; monster.pos.y + rangeToPlayer < player.pos.y; rangeToPlayer++)
 				{
-					if (gameMap[monster.pos.x][i] == wall)
-						return null;
+					if (gameMap[monster.pos.x][monster.pos.y + rangeToPlayer] == wall)
+						return { null, NULL };
 				}
-				return S;
+				return { S, rangeToPlayer };
 			}
 			else {
-				for (int i = monster.pos.y - 1; i >= 0; i--)
+				for (; monster.pos.y - rangeToPlayer > player.pos.y; rangeToPlayer++)
 				{
-					if (gameMap[monster.pos.x][i] == wall)
-						return null;
+					if (gameMap[monster.pos.x][monster.pos.y - rangeToPlayer] == wall)
+						return { null, NULL };
 				}
-				return N;
+				return { N, rangeToPlayer };
 			}
 		}
 		else if (player.pos.y == monster.pos.y)
 		{
 			if (player.pos.x > monster.pos.x)
 			{
-				for (int i = monster.pos.x + 1; i < player.pos.x; i++)
+				for (; monster.pos.x + rangeToPlayer < player.pos.x; rangeToPlayer++)
 				{
-					if (gameMap[i][monster.pos.y] == wall)
-						return null;
+					if (gameMap[monster.pos.x + rangeToPlayer][monster.pos.y] == wall)
+						return { null, NULL };
 				}
-				return E;
+				return { E, rangeToPlayer };
 			}
 			else {
-				for (int i = monster.pos.x - 1; i < player.pos.x; i--)
+				for (; monster.pos.x - rangeToPlayer > player.pos.x; rangeToPlayer++)
 				{
-					if (gameMap[i][monster.pos.y] == wall)
-						return null;
+					if (gameMap[monster.pos.x - rangeToPlayer][monster.pos.y] == wall)
+						return { null, NULL };
 				}
-				return W;
+				return { W, rangeToPlayer };
 			}
 		}
-		return null;
+		return { null, NULL };
 	}
 	bool inline monsterInTarget()
 	{
@@ -318,10 +319,13 @@ public:
 	}
 	void alifeTick()
 	{
-		direction seePlayer = seesPlayer();
+		std::pair<direction, unsigned short> seePlayer = seesPlayer();
 
-		if (seePlayer != null)
-			target = seePlayer;
+		if (seePlayer.first != null)
+		{
+			target = seePlayer.first;
+			targetRange = seePlayer.second;
+		}
 		else if (monsterInTarget())
 			setRandomTarget();
 		
@@ -356,6 +360,7 @@ void generateGame()
 {
 	generateMap();
 	player.pos.x = player.pos.y = 1; //TOFIX
+	//player.pos = { mapXSize - 2, mapYSize - 2 };
 	monster.pos = { mapXSize / 2, mapYSize / 2 };
 	for (int i = mapYSize / 2; i != 0; i--)
 	{
@@ -400,9 +405,8 @@ void debugShowMap() //TOFIX
 
 void showGameCanvas()
 {
-	debugShowMap();
 	int rangeViewedPass = 0;
-	switch (player.viewDirection)
+	switch (player.viewDirection) //Отрисовка лабиринта
 	{
 	case N:
 		for (; gameMap[player.pos.x][player.pos.y - rangeViewedPass] != wall && rangeViewedPass < 6; rangeViewedPass++)
@@ -416,10 +420,6 @@ void showGameCanvas()
 			else
 				showNone(rangeViewedPass, rightSide);
 		}
-		if (door.x == player.pos.x && player.pos.y - rangeViewedPass == door.y)
-			showDoor(rangeViewedPass);
-		if (monster.pos.x == player.pos.x && player.pos.y - rangeViewedPass == monster.pos.y)
-			showDoor(rangeViewedPass);
 		break;
 	case W:
 		for (; gameMap[player.pos.x - rangeViewedPass][player.pos.y] != wall && rangeViewedPass < 6; rangeViewedPass++)
@@ -433,10 +433,6 @@ void showGameCanvas()
 			else
 				showNone(rangeViewedPass, rightSide);
 		}
-		if (door.y == player.pos.y && player.pos.x - rangeViewedPass == door.x)
-			showDoor(rangeViewedPass);
-		if (monster.pos.y == player.pos.y && player.pos.x - rangeViewedPass == monster.pos.x)
-			showDoor(rangeViewedPass);
 		break;
 	case E:
 		for (; gameMap[player.pos.x + rangeViewedPass][player.pos.y] != wall && rangeViewedPass < 6; rangeViewedPass++)
@@ -450,10 +446,6 @@ void showGameCanvas()
 			else
 				showNone(rangeViewedPass, rightSide);
 		}
-		if (door.y == player.pos.y && player.pos.x + rangeViewedPass == door.x)
-			showDoor(rangeViewedPass);
-		if (monster.pos.y == player.pos.y && player.pos.x + rangeViewedPass == monster.pos.x)
-			showDoor(rangeViewedPass);
 		break;
 	case S:
 		for (; gameMap[player.pos.x][player.pos.y + rangeViewedPass] != wall && rangeViewedPass < 6; rangeViewedPass++)
@@ -467,16 +459,41 @@ void showGameCanvas()
 			else
 				showNone(rangeViewedPass, rightSide);
 		}
-		if (door.x == player.pos.x && player.pos.y + rangeViewedPass == door.y)
-			showDoor(rangeViewedPass);
-		if (monster.pos.x == player.pos.x && player.pos.y + rangeViewedPass == monster.pos.y)
-			showDoor(rangeViewedPass);
 		break;
 	}
 	if (rangeViewedPass < 6)
 		showWall(6 - rangeViewedPass + 1, frontSide);
 	else
 		showNone(1, frontSide);
+
+	switch (player.viewDirection) //Отрисовка остальных объектов
+	{
+	case N:
+		if (door.x == player.pos.x && player.pos.y - rangeViewedPass == door.y)
+			showDoor(rangeViewedPass);
+		if (monster.pos.x == player.pos.x && player.pos.y > monster.pos.y && monster.pos.y > player.pos.y - rangeViewedPass)
+			showMonster(player.pos.y - monster.pos.y);
+		break;
+	case W:
+		if (door.y == player.pos.y && player.pos.x - rangeViewedPass == door.x)
+			showDoor(rangeViewedPass);
+		if (monster.pos.y == player.pos.y && player.pos.x < monster.pos.x && monster.pos.x < player.pos.x - rangeViewedPass)
+			showMonster(monster.pos.x - player.pos.x);
+		break;
+	case E:
+		if (door.y == player.pos.y && player.pos.x + rangeViewedPass == door.x)
+			showDoor(rangeViewedPass);
+		if (monster.pos.y == player.pos.y && player.pos.x > monster.pos.x && monster.pos.x > player.pos.x + rangeViewedPass)
+			showMonster(player.pos.x - monster.pos.x);
+		break;
+	case S:
+		if (door.x == player.pos.x && player.pos.y + rangeViewedPass == door.y)
+			showDoor(rangeViewedPass);
+		if (monster.pos.x == player.pos.x && player.pos.y < monster.pos.y && monster.pos.y < player.pos.y + rangeViewedPass)
+			showMonster(monster.pos.y - player.pos.y);
+		break;
+	}
+	debugShowMap();
 }
 
 
@@ -486,9 +503,11 @@ void Game_Tick()
 	refreshCanvas();
 	srand(time(NULL));
 	Sleep(monsterDelay);
+
 	monster.alifeTick();
 	refreshCanvas();
 	if (monster.catchPlayer())
 		presentGameState = lose;
+
 	callGameTick = true;
 }
