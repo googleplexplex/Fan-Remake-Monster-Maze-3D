@@ -75,6 +75,8 @@ public:
 			if (player.inDoor())
 				presentGameState = win;
 		}
+		else if (pointsEqual(goTo, door))
+			presentGameState = win;
 
 		refreshCanvas();
 	}
@@ -507,7 +509,11 @@ void Game_Tick()
 	monster.alifeTick();
 	refreshCanvas();
 	if (monster.catchPlayer())
+	{
 		presentGameState = lose;
+		refreshCanvas();
+		return;
+	}
 
 	callGameTick = true;
 }

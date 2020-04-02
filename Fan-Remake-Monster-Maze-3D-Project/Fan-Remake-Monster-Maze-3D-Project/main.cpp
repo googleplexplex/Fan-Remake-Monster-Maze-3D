@@ -142,6 +142,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 					presentGameState = lose;
 				if (player.inDoor())
 					presentGameState = win;
+				refreshCanvas();
 				break;
 			case KB_E:
 				player.turnRight();
@@ -163,6 +164,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			case VK_ESCAPE:
 			case VK_SPACE:
 				presentGameState = inMenu;
+				refreshCanvas();
 			default:
 				break;
 			}
@@ -175,6 +177,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			case VK_SPACE:
 				presentGameState = inProcess;
 				Game_GenerateGame();
+				refreshCanvas();
 			default:
 				break;
 			}
@@ -222,9 +225,6 @@ void Game_Main()
 		std::thread monsterLogicThread(Game_Tick);
 		monsterLogicThread.detach();
 		callGameTick = false;
-	}
-	else if(presentGameState == lose) {
-		refreshCanvas();
 	}
 }
 
