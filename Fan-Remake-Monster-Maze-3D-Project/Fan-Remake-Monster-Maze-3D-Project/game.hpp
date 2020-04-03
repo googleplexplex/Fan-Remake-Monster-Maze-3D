@@ -103,16 +103,41 @@ public:
 		return pointsEqual(pos, door);
 	}
 }player;
+
+constexpr POINT compasPos = { 20, 20 };
+constexpr POINT compasFontSize = { 6, 12 };
+#define relativeRectangle(x, y, xsize, ysize) Rectangle(mainWindowHDC, x, y, x + xsize, y + ysize)
 void showCompas() //TODO
 {
-	/*setTo(1, 1);
+	HBRUSH oldBrush = (HBRUSH)SelectObject(mainWindowHDC, (HBRUSH)CreateSolidBrush(RGB(255, 255, 255)));
+
+	HFONT hCompasFont = CreateFontA(compasFontSize.y, compasFontSize.x, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ("Arial"));
+	SetTextColor(mainWindowHDC, RGB(255, 255, 255));
+	SetBkColor(mainWindowHDC, RGB(0, 0, 0));
+	HFONT oldFont = (HFONT)SelectObject(mainWindowHDC, hCompasFont);
+
+	relativeRectangle(compasPos.x + (0 * compasFontSize.x), compasPos.y + (0 * compasFontSize.x), compasFontSize.x, compasFontSize.y);
+	TextOut(mainWindowHDC, compasPos.x + (1 * compasFontSize.x), compasPos.y, "A", 1);
+	relativeRectangle(compasPos.x + (2 * compasFontSize.x), compasPos.y + (0 * compasFontSize.x), compasFontSize.x, compasFontSize.y);
+
+	TextOut(mainWindowHDC, compasPos.x + compasFontSize.x, compasPos.y, "B", 1);
+	relativeRectangle(compasPos.x + (1 * compasFontSize.x), compasPos.y + (1 * compasFontSize.y), compasFontSize.x, compasFontSize.y);
+	TextOut(mainWindowHDC, compasPos.x + compasFontSize.x, compasPos.y, "C", 1);
+
+	relativeRectangle(compasPos.x + (0 * compasFontSize.x), compasPos.y + (2 * compasFontSize.x), compasFontSize.x, compasFontSize.y);
+	TextOut(mainWindowHDC, compasPos.x + compasFontSize.x, compasPos.y, "D", 1);
+	relativeRectangle(compasPos.x + (2 * compasFontSize.x), compasPos.y + (2 * compasFontSize.x), compasFontSize.x, compasFontSize.y);
+
+	SelectObject(mainWindowHDC, oldBrush);
+	SelectObject(mainWindowHDC, oldFont);
+	/*
 	cout << '-' << player.viewDirection << '-';
 	setTo(1, 2);
 	cout << turnDirectionLeft(player.viewDirection) << '#' << turnDirectionRight(player.viewDirection);
 	setTo(1, 3);
 	cout << '-' << turnDirectionAround(player.viewDirection) << '-';*/
 }
-void showMap() //TODO
+void showMiniMap() //TODO
 {
 	/*setTo(1, 1);
 	cout << '-' << player.viewDirection << '-';
@@ -385,7 +410,7 @@ void generateGame()
 
 
 //TOLIB
-void debugShowMap() //TOFIX
+void showMap()
 {
 	HBRUSH hOldBrush = (HBRUSH)SelectObject(mainWindowHDC, (HBRUSH)CreateSolidBrush(RGB(rand() % 255, rand() % 255, rand() % 255)));
 
@@ -495,7 +520,12 @@ void showGameCanvas()
 			showMonster(monster.pos.y - player.pos.y);
 		break;
 	}
-	debugShowMap();
+
+	if (cheats) //Чит-коды
+		showMap();
+
+	showCompas(); //Отображение компаса
+	showMiniMap(); //Отрисовка мини-карты
 }
 
 

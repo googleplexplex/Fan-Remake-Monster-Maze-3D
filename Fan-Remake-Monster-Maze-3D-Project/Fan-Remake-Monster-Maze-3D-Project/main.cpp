@@ -19,6 +19,7 @@ gameState presentGameState = inMenu;
 
 LOGFONT font;
 HFONT hfont;
+bool cheats = false;
 
 #include "menu.hpp"
 
@@ -96,6 +97,7 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
 #define KB_W 0x57
 #define KB_E 0x45
 #define KB_S 0x53
+#define KB_C 0x43
 LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	PAINTSTRUCT ps;
@@ -149,6 +151,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 				break;
 			case KB_S:
 				player.turnAround();
+				break;
+			case KB_C:
+				cheats = !cheats;
 				break;
 			case VK_ESCAPE:
 				PostQuitMessage(0);
