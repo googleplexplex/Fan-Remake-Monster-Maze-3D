@@ -119,6 +119,7 @@ constexpr POINT compasPos = { 520, 20 };
 constexpr POINT compasFontSize = { 8, 16 };
 constexpr POINT compasPosIndentation = { 20, 20 };
 #define relativeRectangle(x, y, xsize, ysize) Rectangle(mainWindowHDC, x, y, x + xsize, y + ysize)
+#define relativeRectangle(x, y, xsize, ysize) Rectangle(mainWindowHDC, x, y, x + xsize, y + ysize)
 LPSTR toString(char charset)
 {
 	LPSTR result = new char[2];
@@ -149,21 +150,84 @@ void showCompas() //TODO
 
 	SelectObject(mainWindowHDC, oldBrush);
 	SelectObject(mainWindowHDC, oldFont);
-	/*
-	cout << '-' << player.viewDirection << '-';
-	setTo(1, 2);
-	cout << turnDirectionLeft(player.viewDirection) << '#' << turnDirectionRight(player.viewDirection);
-	setTo(1, 3);
-	cout << '-' << turnDirectionAround(player.viewDirection) << '-';*/
 }
+constexpr POINT miniMapPos = { 520, 120 };
+constexpr POINT miniMapBlockSize = { 40, 40 };
 void showMiniMap() //TODO
 {
-	/*setTo(1, 1);
-	cout << '-' << player.viewDirection << '-';
-	setTo(1, 2);
-	cout << turnDirectionLeft(player.viewDirection) << '#' << turnDirectionRight(player.viewDirection);
-	setTo(1, 3);
-	cout << '-' << turnDirectionAround(player.viewDirection) << '-';*/
+	HBRUSH oldBrush = (HBRUSH)SelectObject(mainWindowHDC, wallBrush);
+
+	switch (player.viewDirection)
+	{
+	case N:
+		for (int i = 0; i < 3; i++)
+		{
+			for (int j = 0; j < 3; j++)
+			{
+				if (gameMap[player.pos.x - 1 + j][player.pos.y - 1 + i] == wall)
+					relativeRectangle(miniMapPos.x + (j * miniMapBlockSize.x), miniMapPos.y + (i * miniMapBlockSize.y), miniMapBlockSize.x, miniMapBlockSize.y);
+				else
+				{
+					HBRUSH prevBrush = (HBRUSH)SelectObject(mainWindowHDC, noneBrush);
+					relativeRectangle(miniMapPos.x + (j * miniMapBlockSize.x), miniMapPos.y + (i * miniMapBlockSize.y), miniMapBlockSize.x, miniMapBlockSize.y);
+					SelectObject(mainWindowHDC, prevBrush);
+				}
+			}
+		}
+		break;
+	case W:
+		for (int i = 0; i < 3; i++)
+		{
+			for (int j = 0; j < 3; j++)
+			{
+				if (gameMap[player.pos.x + 1 - j][player.pos.y - 1 + i] == wall)
+					relativeRectangle(miniMapPos.x + (j * miniMapBlockSize.x), miniMapPos.y + (i * miniMapBlockSize.y), miniMapBlockSize.x, miniMapBlockSize.y);
+				else
+				{
+					HBRUSH prevBrush = (HBRUSH)SelectObject(mainWindowHDC, noneBrush);
+					relativeRectangle(miniMapPos.x + (j * miniMapBlockSize.x), miniMapPos.y + (i * miniMapBlockSize.y), miniMapBlockSize.x, miniMapBlockSize.y);
+					SelectObject(mainWindowHDC, prevBrush);
+				}
+			}
+		}
+		break;
+	case E:
+		for (int i = 0; i < 3; i++)
+		{
+			for (int j = 0; j < 3; j++)
+			{
+				if (gameMap[player.pos.x - 1 + j][player.pos.y + 1 - i] == wall)
+					relativeRectangle(miniMapPos.x + (j * miniMapBlockSize.x), miniMapPos.y + (i * miniMapBlockSize.y), miniMapBlockSize.x, miniMapBlockSize.y);
+				else
+				{
+					HBRUSH prevBrush = (HBRUSH)SelectObject(mainWindowHDC, noneBrush);
+					relativeRectangle(miniMapPos.x + (j * miniMapBlockSize.x), miniMapPos.y + (i * miniMapBlockSize.y), miniMapBlockSize.x, miniMapBlockSize.y);
+					SelectObject(mainWindowHDC, prevBrush);
+				}
+			}
+		}
+		break;
+	case S:
+		for (int i = 0; i < 3; i++)
+		{
+			for (int j = 0; j < 3; j++)
+			{
+				if (gameMap[player.pos.x + 1 - j][player.pos.y + 1 - i] == wall)
+					relativeRectangle(miniMapPos.x + (j * miniMapBlockSize.x), miniMapPos.y + (i * miniMapBlockSize.y), miniMapBlockSize.x, miniMapBlockSize.y);
+				else
+				{
+					HBRUSH prevBrush = (HBRUSH)SelectObject(mainWindowHDC, noneBrush);
+					relativeRectangle(miniMapPos.x + (j * miniMapBlockSize.x), miniMapPos.y + (i * miniMapBlockSize.y), miniMapBlockSize.x, miniMapBlockSize.y);
+					SelectObject(mainWindowHDC, prevBrush);
+				}
+			}
+		}
+		break;
+	default:
+		break;
+	}
+
+	SelectObject(mainWindowHDC, oldBrush);
 }
 
 class monsterClass
