@@ -52,6 +52,17 @@ direction inline turnDirectionAround(direction rolledDirection)
 	case W: return E;
 	}
 }
+char inline directionName(direction rolledDirection)
+{
+	switch (rolledDirection)
+	{
+	case N: return 'N';
+	case E: return 'E';
+	case S: return 'S';
+	case W: return 'W';
+	default: return NULL;
+	}
+}
 class playerClass
 {
 public:
@@ -104,9 +115,17 @@ public:
 	}
 }player;
 
-constexpr POINT compasPos = { 20, 20 };
-constexpr POINT compasFontSize = { 6, 12 };
+constexpr POINT compasPos = { 520, 20 };
+constexpr POINT compasFontSize = { 8, 16 };
+constexpr POINT compasPosIndentation = { 20, 20 };
 #define relativeRectangle(x, y, xsize, ysize) Rectangle(mainWindowHDC, x, y, x + xsize, y + ysize)
+LPSTR toString(char charset)
+{
+	LPSTR result = new char[2];
+	result[0] = charset;
+	result[1] = NULL;
+	return result;
+}
 void showCompas() //TODO
 {
 	HBRUSH oldBrush = (HBRUSH)SelectObject(mainWindowHDC, (HBRUSH)CreateSolidBrush(RGB(255, 255, 255)));
@@ -116,17 +135,17 @@ void showCompas() //TODO
 	SetBkColor(mainWindowHDC, RGB(0, 0, 0));
 	HFONT oldFont = (HFONT)SelectObject(mainWindowHDC, hCompasFont);
 
-	relativeRectangle(compasPos.x + (0 * compasFontSize.x), compasPos.y + (0 * compasFontSize.x), compasFontSize.x, compasFontSize.y);
-	TextOut(mainWindowHDC, compasPos.x + (1 * compasFontSize.x), compasPos.y, "A", 1);
-	relativeRectangle(compasPos.x + (2 * compasFontSize.x), compasPos.y + (0 * compasFontSize.x), compasFontSize.x, compasFontSize.y);
+	relativeRectangle(compasPos.x + (0 * compasPosIndentation.x), compasPos.y + (0 * compasPosIndentation.y), compasFontSize.x, compasFontSize.y);
+	TextOut(mainWindowHDC, compasPos.x + (1 * compasPosIndentation.x), compasPos.y + (0 * compasPosIndentation.y), toString(directionName(player.viewDirection)), 1);
+	relativeRectangle(compasPos.x + (2 * compasPosIndentation.x), compasPos.y + (0 * compasPosIndentation.y), compasFontSize.x, compasFontSize.y);
 
-	TextOut(mainWindowHDC, compasPos.x + compasFontSize.x, compasPos.y, "B", 1);
-	relativeRectangle(compasPos.x + (1 * compasFontSize.x), compasPos.y + (1 * compasFontSize.y), compasFontSize.x, compasFontSize.y);
-	TextOut(mainWindowHDC, compasPos.x + compasFontSize.x, compasPos.y, "C", 1);
+	TextOut(mainWindowHDC, compasPos.x + (0 * compasPosIndentation.x), compasPos.y + (1 * compasPosIndentation.y), toString(directionName(turnDirectionLeft(player.viewDirection))), 1);
+	relativeRectangle(compasPos.x + (1 * compasPosIndentation.x), compasPos.y + (1 * compasPosIndentation.y), compasFontSize.x, compasFontSize.y);
+	TextOut(mainWindowHDC, compasPos.x + (2 * compasPosIndentation.x), compasPos.y + (1 * compasPosIndentation.y), toString(directionName(turnDirectionRight(player.viewDirection))), 1);
 
-	relativeRectangle(compasPos.x + (0 * compasFontSize.x), compasPos.y + (2 * compasFontSize.x), compasFontSize.x, compasFontSize.y);
-	TextOut(mainWindowHDC, compasPos.x + compasFontSize.x, compasPos.y, "D", 1);
-	relativeRectangle(compasPos.x + (2 * compasFontSize.x), compasPos.y + (2 * compasFontSize.x), compasFontSize.x, compasFontSize.y);
+	relativeRectangle(compasPos.x + (0 * compasPosIndentation.x), compasPos.y + (2 * compasPosIndentation.y), compasFontSize.x, compasFontSize.y);
+	TextOut(mainWindowHDC, compasPos.x + (1 * compasPosIndentation.x), compasPos.y + (2 * compasPosIndentation.y), toString(directionName(turnDirectionAround(player.viewDirection))), 1);
+	relativeRectangle(compasPos.x + (2 * compasPosIndentation.x), compasPos.y + (2 * compasPosIndentation.y), compasFontSize.x, compasFontSize.y);
 
 	SelectObject(mainWindowHDC, oldBrush);
 	SelectObject(mainWindowHDC, oldFont);
@@ -542,7 +561,6 @@ void Game_Tick()
 	{
 		presentGameState = lose;
 		refreshCanvas();
-		return;
 	}
 
 	callGameTick = true;
