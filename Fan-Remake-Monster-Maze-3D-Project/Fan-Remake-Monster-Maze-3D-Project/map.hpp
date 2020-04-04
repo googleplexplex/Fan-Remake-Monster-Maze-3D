@@ -96,4 +96,18 @@ void generateMap()
 				y = 2 * (rand() % ((mapYSize - 1) / 2)) + 1;
 			} while (gameMap[y][x] != none);
 	} // На этом и все.
+
+	unsigned int holesCounter = rand() % 5 + 5;
+	while(holesCounter > 0)
+	{
+		POINT randomPoint = { rand() % (mapXSize - 2) + 1, rand() % (mapYSize - 2) + 1 };
+		if (gameMap[randomPoint.x][randomPoint.y] == wall && 
+			((gameMap[randomPoint.x - 1][randomPoint.y] == wall && gameMap[randomPoint.x + 1][randomPoint.y] == wall) ||
+				(gameMap[randomPoint.x][randomPoint.y - 1] == wall && gameMap[randomPoint.x][randomPoint.y + 1] == wall)
+			))
+		{
+			gameMap[randomPoint.x][randomPoint.y] = none;
+			holesCounter--;
+		}
+	}
 }
