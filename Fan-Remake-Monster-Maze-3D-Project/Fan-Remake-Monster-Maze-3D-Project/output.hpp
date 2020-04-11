@@ -33,18 +33,6 @@ void rectangle(POINT f, POINT s, HBRUSH& brush)
 
 	SelectObject(mainWindowHDC, hOldBrush);
 }
-void eriseWindow()
-{
-	RECT rect;
-	GetClientRect(mainWindowHWND, &rect);
-	FillRect(mainWindowHDC, &rect, (HBRUSH)CreateSolidBrush(RGB(0, 0, 0)));
-}
-
-void inline refreshCanvas()
-{
-	InvalidateRect(mainWindowHWND, NULL, NULL);
-	SendMessage(mainWindowHWND, WM_PAINT, NULL, NULL);
-}
 
 
 

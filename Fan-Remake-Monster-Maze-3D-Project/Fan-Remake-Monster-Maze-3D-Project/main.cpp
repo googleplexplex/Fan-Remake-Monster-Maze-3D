@@ -3,31 +3,45 @@
 
 #define WINDOW_CLASS_NAME "Monster_Maze_3D_Fan_Remake"
 
+#define KB_Q 0x51
+#define KB_W 0x57
+#define KB_E 0x45
+#define KB_S 0x53
+#define KB_C 0x43
+
 HINSTANCE hInstanceApp;
 HWND mainWindowHWND;
 HDC mainWindowHDC;
 constexpr POINT screenSize = { 800, 500 };
+void synchronizeWindowSize();
+void eriseWindow();
+void inline refreshCanvas();
 
-typedef enum gameState
+typedef enum appPages
 {
-	win = 0,
-	lose,
-	inProcess,
-	inMenu
+	winPage = 0,
+	losePage,
+	gamePage,
+	menuPage
 };
-gameState presentGameState = inMenu;
+appPages _presentPage = menuPage;
 
 LOGFONT font;
 HFONT hfont;
 bool cheats = false;
 
-#include "menu.hpp"
+void goToPage(appPages newAppState);
+#include "winPage.hpp"
+#include "losePage.hpp"
+#include "gamePage.hpp"
+#include "menuPage.hpp"
+#include "pageDispather.hpp"
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-void Game_Init();
-void Game_Main();
-void Game_Shitdown();
+void App_Init();
+void App_Main();
+void App_Shitdown();
 
 int APIENTRY wWinMain(HINSTANCE hInstance,
 	HINSTANCE hPrevInstance,
@@ -71,7 +85,7 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
 
 	mainWindowHWND = hwnd;
 
-	Game_Init();
+	App_Init();
 
 	while (true)
 	{
@@ -84,20 +98,14 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
 			DispatchMessage(&msg);
 		}
 
-		Game_Main();
+		App_Main();
 	}
 
-	Game_Shitdown();
+	App_Shitdown();
 
 	return msg.wParam;
 }
 
-//  ЦЕЛЬ: Обрабатывает сообщения в главном окне.
-#define KB_Q 0x51
-#define KB_W 0x57
-#define KB_E 0x45
-#define KB_S 0x53
-#define KB_C 0x43
 LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	PAINTSTRUCT ps;
@@ -108,86 +116,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		return 0;
 	case WM_PAINT:
 		mainWindowHDC = BeginPaint(hWnd, &ps);
-		eriseWindow();
-		switch (presentGameState)
-		{
-		case inProcess:
-			showGameCanvas();
-			break;
-		case lose:
-			Game_ShowLose();
-			break;
-		case win:
-			Game_ShowWin();
-			break;
-		case inMenu:
-			Game_ShowMenu();
-			break;
-		}
-		ValidateRect(hWnd, NULL);
+		eventDispather_onPaint(mainWindowHDC);
 		EndPaint(hWnd, &ps);
 		return 0;
 	case WM_KEYDOWN:
-		unsigned int key;
-		key = wParam; //Получаем код нажатой клавиши
-		switch (presentGameState)
-		{
-		case inProcess:
-			switch (key)
-			{
-			case KB_Q:
-				player.turnLeft();
-				break;
-			case KB_W:
-				player.moveForward();
-				if (monster.catchPlayer())
-					presentGameState = lose;
-				if (player.inDoor())
-					presentGameState = win;
-				refreshCanvas();
-				break;
-			case KB_E:
-				player.turnRight();
-				break;
-			case KB_S:
-				player.turnAround();
-				break;
-			case KB_C:
-				cheats = !cheats;
-				break;
-			case VK_ESCAPE:
-				PostQuitMessage(0);
-			case VK_SPACE:
-			default:
-				break;
-			}
-			break;
-		case win:
-		case lose:
-			switch (key)
-			{
-			case VK_ESCAPE:
-			case VK_SPACE:
-				presentGameState = inMenu;
-				refreshCanvas();
-			default:
-				break;
-			}
-			break;
-		case inMenu:
-			switch (key)
-			{
-			case VK_ESCAPE:
-				PostQuitMessage(0);
-			case VK_SPACE:
-				presentGameState = inProcess;
-				Game_GenerateGame();
-				refreshCanvas();
-			default:
-				break;
-			}
-			break;
-		}
+		eventDispather_onKeyPressed((unsigned int)wParam);
 		return 0;
 	case WM_DESTROY:
 		PostQuitMessage(0);
@@ -198,34 +131,40 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 }
 
 
-
-void Game_Init()
-{
-	srand(time(NULL));
-	font.lfHeight = 24;// Устанавливает высоту шрифта или символа
-	font.lfWidth = 12;// Устанавливает среднюю ширину символов в шрифте
-	//font.lfEscapement = 0;// Устанавливает угол, между вектором наклона и осью X устройства
-	//font.lfOrientation = 0;// Устанавливает угол, между основной линией каждого символа и осью X устройства
-	//font.lfWeight = 100;// Устанавливает толщину шрифта в диапазоне от 0 до 1000
-	//font.lfItalic = 0;// Устанавливает курсивный шрифт
-	//font.lfUnderline = 0;// Устанавливает подчеркнутый шрифт
-	//font.lfStrikeOut = 0;// Устанавливает зачеркнутый шрифт
-	//font.lfCharSet = RUSSIAN_CHARSET;// Устанавливает набор символов
-	//font.lfOutPrecision = 0;// Устанавливает точность вывода
-	//font.lfClipPrecision = 0;// Устанавливает точность отсечения
-	//font.lfQuality = 0;// Устанавливает качество вывода
-	//font.lfPitchAndFamily = 0;// Устанавливает ширину символов и семейство шрифта
-	//strcpy(font.lfFaceName, "VERDANA");//  устанавливает название шрифта
-	hfont = CreateFontIndirect(&font);
-}
-
-void Game_Main()
+void synchronizeWindowSize()
 {
 	RECT consoleWindowRect = { 0 };
 	GetWindowRect(mainWindowHWND, &consoleWindowRect);
 	MoveWindow(mainWindowHWND, consoleWindowRect.left, consoleWindowRect.top, screenSize.x + 4, screenSize.y + 30, NULL);
+}
 
-	if (presentGameState == inProcess && callGameTick == true)
+void eriseWindow()
+{
+	RECT rect;
+	GetClientRect(mainWindowHWND, &rect);
+	FillRect(mainWindowHDC, &rect, (HBRUSH)CreateSolidBrush(RGB(0, 0, 0)));
+}
+
+void inline refreshCanvas()
+{
+	InvalidateRect(mainWindowHWND, NULL, NULL);
+	SendMessage(mainWindowHWND, WM_PAINT, NULL, NULL);
+}
+
+
+void App_Init()
+{
+	srand(time(NULL));
+	font.lfHeight = 24;
+	font.lfWidth = 12;
+	hfont = CreateFontIndirect(&font);
+}
+
+void App_Main()
+{
+	synchronizeWindowSize();
+
+	if (_presentPage == gamePage && callGameTick == true)
 	{
 		std::thread monsterLogicThread(Game_Tick);
 		monsterLogicThread.detach();
@@ -233,7 +172,7 @@ void Game_Main()
 	}
 }
 
-void Game_Shitdown()
+void App_Shitdown()
 {
 	return;
 }

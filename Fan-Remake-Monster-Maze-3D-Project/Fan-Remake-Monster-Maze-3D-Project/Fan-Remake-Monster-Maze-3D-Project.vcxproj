@@ -119,9 +119,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="game.hpp" />
+    <ClInclude Include="gamePage.hpp" />
+    <ClInclude Include="losePage.hpp" />
     <ClInclude Include="map.hpp" />
-    <ClInclude Include="menu.hpp" />
+    <ClInclude Include="menuPage.hpp" />
     <ClInclude Include="output.hpp" />
+    <ClInclude Include="pageDispather.hpp" />
+    <ClInclude Include="winPage.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -84,10 +84,10 @@ public:
 			pos = goTo;
 
 			if (player.inDoor())
-				presentGameState = win;
+				_presentPage = winPage;
 		}
 		else if (pointsEqual(goTo, door))
-			presentGameState = win;
+			_presentPage = winPage;
 
 		refreshCanvas();
 	}
@@ -623,7 +623,7 @@ void Game_Tick()
 	refreshCanvas();
 	if (monster.catchPlayer())
 	{
-		presentGameState = lose;
+		_presentPage = losePage;
 		refreshCanvas();
 	}
 

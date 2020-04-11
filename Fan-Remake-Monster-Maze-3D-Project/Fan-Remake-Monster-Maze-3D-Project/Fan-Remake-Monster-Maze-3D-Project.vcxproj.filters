@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Файлы заголовков\pages">
+      <UniqueIdentifier>{b4ec772a-5bb3-493a-8d2c-9485d0726978}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -20,9 +23,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="menu.hpp">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
     <ClInclude Include="map.hpp">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
@@ -31,6 +31,21 @@
     </ClInclude>
     <ClInclude Include="game.hpp">
       <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="pageDispather.hpp">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="winPage.hpp">
+      <Filter>Файлы заголовков\pages</Filter>
+    </ClInclude>
+    <ClInclude Include="losePage.hpp">
+      <Filter>Файлы заголовков\pages</Filter>
+    </ClInclude>
+    <ClInclude Include="gamePage.hpp">
+      <Filter>Файлы заголовков\pages</Filter>
+    </ClInclude>
+    <ClInclude Include="menuPage.hpp">
+      <Filter>Файлы заголовков\pages</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
