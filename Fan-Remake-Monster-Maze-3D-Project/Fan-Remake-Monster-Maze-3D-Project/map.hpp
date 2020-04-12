@@ -4,16 +4,17 @@
 
 typedef enum block {
 	none = 0,
-	wall
+	wall,
+	door
 };
 constexpr unsigned int mapXSize = 25;
 constexpr unsigned int mapYSize = 25;
 block gameMap[mapXSize][mapYSize];
-block getFromMap(unsigned int x, unsigned int y)
+block getFromMap(POINT point)
 {
-	return gameMap[y][x];
+	return gameMap[point.x][point.y];
 }
-constexpr POINT door = { mapXSize - 2, mapYSize - 1 };
+constexpr POINT doorPos = { mapXSize - 2, mapYSize - 1 };
 
 bool deadEnd(int x, int y) {
 	int a = 0;

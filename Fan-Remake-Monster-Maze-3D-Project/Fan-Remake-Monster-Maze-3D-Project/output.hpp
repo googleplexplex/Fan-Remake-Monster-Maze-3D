@@ -1,8 +1,11 @@
 #pragma once
+#include <windows.h>
 
 HBRUSH blackBrush = CreateSolidBrush(RGB(0, 0, 0));
 HBRUSH wallBrush = CreateSolidBrush(RGB(169, 169, 169));
 HBRUSH noneBrush = CreateSolidBrush(RGB(128, 128, 128));
+HBRUSH doorBrush = CreateSolidBrush(RGB(0, 255, 0));
+HBRUSH monsterBrush = CreateSolidBrush(RGB(255, 0, 0));
 struct LINE
 {
 	POINT f;
@@ -79,17 +82,17 @@ VERTICAL_TRAPEZE getTrapezeCoords(short range, sidesEnum side)
 	{
 		switch (range) //TOFIX
 		{
-		case 1:
-			return cubeSquareInCenter(1); //1
-		case 2:
-			return cubeSquareInCenter(1 + 1); //2
-		case 3:
-			return cubeSquareInCenter(1 + 1 + 2); //4
-		case 4:
-			return cubeSquareInCenter(1 + 1 + 2 + 4); //8
-		case 5:
-			return cubeSquareInCenter(1 + 1 + 2 + 4 + 6); //14
 		case 6:
+			return cubeSquareInCenter(1); //1
+		case 5:
+			return cubeSquareInCenter(1 + 1); //2
+		case 4:
+			return cubeSquareInCenter(1 + 1 + 2); //4
+		case 3:
+			return cubeSquareInCenter(1 + 1 + 2 + 4); //8
+		case 2:
+			return cubeSquareInCenter(1 + 1 + 2 + 4 + 6); //14
+		case 1:
 			return cubeSquareInCenter(1 + 1 + 2 + 4 + 6 + 8); //22
 		}
 	}
@@ -116,18 +119,13 @@ void inline showNone(short range, sidesEnum side)
 void inline showMonster(short range) //TOFIX
 {
 	VERTICAL_TRAPEZE wallPrototype = getTrapezeCoords(6 - range + 1, frontSide);
-	HBRUSH monsterBrush = CreateSolidBrush(RGB(255, 0, 0));
 	wallPrototype.biggestBaseF.y = wallPrototype.smallestBaseF.y;
 	wallPrototype.biggestBaseS.y = wallPrototype.smallestBaseS.y;
 	trapeze(wallPrototype, monsterBrush);
 }
-void inline showDoor(short range) //TOFIX
+void inline showDoor(short range, sidesEnum side) //TOFIX
 {
-	VERTICAL_TRAPEZE wallPrototype = getTrapezeCoords(6 - range + 1, frontSide);
-	HBRUSH doorBrush = CreateSolidBrush(RGB(0, 255, 0));
-	wallPrototype.biggestBaseF.y = wallPrototype.smallestBaseF.y;
-	wallPrototype.biggestBaseS.y = wallPrototype.smallestBaseS.y;
-	trapeze(wallPrototype, doorBrush);
+	trapeze(getTrapezeCoords(range, side), doorBrush);
 }
 //debug zone
 void inline showCube(unsigned int x, unsigned int y)

@@ -22,8 +22,6 @@ void gamePage_onKeyPressed(unsigned int key)
 		player.moveForward();
 		if (monster.catchPlayer())
 			goToPage(losePage);
-		if (player.inDoor())
-			goToPage(winPage);
 		refreshCanvas();
 		break;
 	case KB_E:
