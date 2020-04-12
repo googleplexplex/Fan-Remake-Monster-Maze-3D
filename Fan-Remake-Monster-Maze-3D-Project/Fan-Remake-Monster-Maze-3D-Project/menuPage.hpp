@@ -10,8 +10,8 @@ void menuPage_onPaint(HDC dispatheredHDC)
 	HFONT oldFont = (HFONT)SelectObject(mainWindowHDC, hfont);
 	SetTextColor(mainWindowHDC, RGB(255, 255, 255));
 	SetBkColor(mainWindowHDC, RGB(0, 0, 0));
-	TextOut(mainWindowHDC, screenSize.x / 3, screenSize.y / 5, "MONSTER MAZE 3D", strlen("MONSTER MAZE 3D"));
-	TextOut(mainWindowHDC, screenSize.x / 7 * 2, screenSize.y / 3 * 2, "PRESS SPACE TO START", strlen("PRESS SPACE TO START"));
+	TextOutCenter(mainWindowHDC, screenSize.y / 5, "MONSTER MAZE 3D");
+	TextOutCenter(mainWindowHDC, screenSize.y / 3 * 2, "PRESS SPACE TO START");
 	SelectObject(mainWindowHDC, oldFont);
 }
 

@@ -16,6 +16,10 @@ constexpr POINT screenSize = { 800, 500 };
 void synchronizeWindowSize();
 void eriseWindow();
 void inline refreshCanvas();
+POINT GetTextExtentPoint32Size(const char* str);
+#define TextOutWithDynamicLength(hdc, x, y, str) TextOut((hdc), (x), (y), (str), strlen(str))
+#define TextOutCenter(hdc, y, str) TextOutWithDynamicLength((hdc), screenSize.x / 2 - (GetTextExtentPoint32Size(str).x) / 2, (y), (str));
+#define TextOutCenterGame(hdc, Y, str) TextOutWithDynamicLength((hdc), screenSize.y / 2 - (GetTextExtentPoint32Size(str).x) / 2, (Y), (str));
 
 typedef enum appPages
 {
@@ -150,6 +154,15 @@ void inline refreshCanvas()
 	InvalidateRect(mainWindowHWND, NULL, NULL);
 	SendMessage(mainWindowHWND, WM_PAINT, NULL, NULL);
 }
+
+POINT GetTextExtentPoint32Size(const char* str)
+{
+	SIZE size;
+	GetTextExtentPoint32A(GetDC(mainWindowHWND), str, strlen(str), &size);
+	POINT resut = { size.cx, size.cy };
+	return resut;
+}
+
 
 
 void App_Init()

@@ -5,7 +5,9 @@
 #include <atomic>
 #include "map.hpp"
 #include "output.hpp"
+POINT GetTextExtentPoint32Size(const char* str);
 #define pointsEqual(f, s) (((f).x == (s).x) && ((f).y == (s).y))
+#define sqr(x) ((x)*(x))
 
 typedef enum direction {
 	N = 0,
@@ -17,8 +19,6 @@ typedef enum direction {
 //-N-
 //W-E
 //-S-
-
-constexpr unsigned int monsterDelay = 1000;
 
 direction inline turnDirectionLeft(direction rolledDirection)
 {
@@ -224,6 +224,10 @@ void showMiniMap() //TODO
 
 	SelectObject(mainWindowHDC, oldBrush);
 }
+double inline getRangeBehind(POINT f, POINT s)
+{
+	return sqrt(sqr(s.x - f.x) + sqr(s.y - f.y));
+}
 
 class monsterClass
 {
@@ -231,6 +235,7 @@ public:
 	POINT pos;
 	direction target = null;
 	unsigned short targetRange = 0;
+	unsigned int speed = 1000;
 	std::pair<direction, unsigned short> seesPlayer() //return null, if false, direction if true
 	{
 		unsigned short rangeToPlayer = 1;
@@ -458,6 +463,29 @@ public:
 		targetRange = turnDescription.ranges[rand() % turnDescription.rangesCount];
 	}
 }monster;
+constexpr const char* monsterStatuses[4] = { "RUN", "I hear steps...", "He is close", "He is far" };
+void showStatus()
+{
+	if (monster.seesPlayer().first != null)
+	{
+		TextOutA(mainWindowHDC,
+			screenSize.y / 2 - (GetTextExtentPoint32Size(monsterStatuses[0]).x) / 2,
+			screenSize.y - GetTextExtentPoint32Size(monsterStatuses[0]).y - 30,
+			monsterStatuses[0], strlen(monsterStatuses[0]));
+		return;
+	}
+
+	unsigned int rangeBehingPlayerAndMonster = getRangeBehind(player.pos, monster.pos);
+	if (rangeBehingPlayerAndMonster <= 5) {
+		TextOutCenterGame(mainWindowHDC, screenSize.y - GetTextExtentPoint32Size(monsterStatuses[1]).y - 30, monsterStatuses[1]);
+	}
+	else if (rangeBehingPlayerAndMonster <= 10) {
+		TextOutCenterGame(mainWindowHDC, screenSize.y - GetTextExtentPoint32Size(monsterStatuses[2]).y - 30, monsterStatuses[2]);
+	}
+	else {
+		TextOutCenterGame(mainWindowHDC, screenSize.y - GetTextExtentPoint32Size(monsterStatuses[3]).y - 30, monsterStatuses[3]);
+	}
+}
 
 
 
@@ -466,7 +494,6 @@ void generateGame()
 	generateMap();
 	gameMap[mapXSize - 2][mapYSize - 1] = door;
 	player.pos.x = player.pos.y = 1;
-	//player.pos = { mapXSize - 2, mapYSize - 2 };
 	monster.pos = { mapXSize / 2, mapYSize / 2 };
 	for (int i = mapYSize / 2; i != 0; i--)
 	{
@@ -595,6 +622,7 @@ void showGameCanvas()
 
 	showCompas(); //Отображение компаса
 	showMiniMap(); //Отрисовка мини-карты
+	showStatus();
 }
 
 
@@ -603,15 +631,12 @@ void Game_Tick()
 {
 	refreshCanvas();
 	srand(time(NULL));
-	Sleep(monsterDelay);
+	Sleep(monster.speed);
 
 	monster.alifeTick();
 	refreshCanvas();
 	if (monster.catchPlayer())
-	{
-		_presentPage = losePage;
-		refreshCanvas();
-	}
+		goToPage(losePage);
 
 	callGameTick = true;
 }

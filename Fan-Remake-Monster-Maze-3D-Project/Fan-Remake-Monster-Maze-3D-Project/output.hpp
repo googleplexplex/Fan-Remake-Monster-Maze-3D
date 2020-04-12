@@ -123,11 +123,10 @@ void inline showMonster(short range) //TOFIX
 	wallPrototype.biggestBaseS.y = wallPrototype.smallestBaseS.y;
 	trapeze(wallPrototype, monsterBrush);
 }
-void inline showDoor(short range, sidesEnum side) //TOFIX
+void inline showDoor(short range, sidesEnum side)
 {
 	trapeze(getTrapezeCoords(range, side), doorBrush);
 }
-//debug zone
 void inline showCube(unsigned int x, unsigned int y)
 {
 	Rectangle(mainWindowHDC, cubePos(x), cubePos(y), cubePos(x + 1), cubePos(y + 1));
