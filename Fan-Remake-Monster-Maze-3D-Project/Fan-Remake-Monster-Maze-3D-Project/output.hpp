@@ -118,7 +118,7 @@ void inline showNone(short range, sidesEnum side)
 }
 void inline showMonster(short range) //TOFIX
 {
-	VERTICAL_TRAPEZE wallPrototype = getTrapezeCoords(6 - range + 1, frontSide);
+	VERTICAL_TRAPEZE wallPrototype = getTrapezeCoords(range, frontSide);
 	wallPrototype.biggestBaseF.y = wallPrototype.smallestBaseF.y;
 	wallPrototype.biggestBaseS.y = wallPrototype.smallestBaseS.y;
 	trapeze(wallPrototype, monsterBrush);
