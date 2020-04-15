@@ -26,3 +26,8 @@ void losePage_onKeyPressed(unsigned int key)
 		break;
 	}
 }
+
+void losePage_main()
+{
+
+}

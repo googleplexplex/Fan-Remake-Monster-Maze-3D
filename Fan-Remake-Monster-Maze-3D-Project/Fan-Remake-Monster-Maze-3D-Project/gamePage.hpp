@@ -37,3 +37,12 @@ void gamePage_onKeyPressed(unsigned int key)
 		break;
 	}
 }
+
+void gamePage_main()
+{
+	if (callGameTick == false)
+		return;
+	std::thread monsterLogicThread(Game_Tick);
+	monsterLogicThread.detach();
+	callGameTick = false;
+}

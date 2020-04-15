@@ -177,12 +177,7 @@ void App_Main()
 {
 	synchronizeWindowSize();
 
-	if (_presentPage == gamePage && callGameTick == true)
-	{
-		std::thread monsterLogicThread(Game_Tick);
-		monsterLogicThread.detach();
-		callGameTick = false;
-	}
+	eventDispather_main();
 }
 
 void App_Shitdown()

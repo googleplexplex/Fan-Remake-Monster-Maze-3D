@@ -26,3 +26,8 @@ void winPage_onKeyPressed(unsigned int key)
 		break;
 	}
 }
+
+void winPage_main()
+{
+
+}

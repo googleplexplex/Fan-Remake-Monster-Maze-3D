@@ -45,6 +45,25 @@ void eventDispather_onKeyPressed(unsigned int key)
 	}
 }
 
+void eventDispather_main()
+{
+	switch (_presentPage)
+	{
+	case gamePage:
+		gamePage_main();
+		break;
+	case winPage:
+		winPage_main();
+		break;
+	case losePage:
+		losePage_main();
+		break;
+	case menuPage:
+		menuPage_main();
+		break;
+	}
+}
+
 void goToPage(appPages newAppState)
 {
 	eriseWindow();
