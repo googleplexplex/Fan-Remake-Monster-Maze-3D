@@ -13,7 +13,6 @@ void menuPage_onCalled()
 	menuPage_Cursor = onStart;
 }
 
-#define randInRange(from, to) (rand() % ((to) - (from)) + (from))
 void menuPage_onPaint(HDC dispatheredHDC)
 {
 	COLORREF presentRandomColor = RGB(randInRange(125, 255), randInRange(125, 255), randInRange(125, 255));
@@ -57,7 +56,7 @@ void menuPage_onKeyPressed(unsigned int key)
 	{
 	case VK_SPACE:
 		if(menuPage_Cursor == onStart)
-			goToPage(gamePage);
+			goToPage(winPage);
 		else if(menuPage_Cursor == onSecondButton)
 			PostQuitMessage(0);
 		else if (menuPage_Cursor == onExit)

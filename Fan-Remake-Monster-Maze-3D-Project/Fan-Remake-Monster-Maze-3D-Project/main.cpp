@@ -20,6 +20,7 @@ POINT GetTextExtentPoint32Size(const char* str);
 #define TextOutWithDynamicLength(hdc, x, y, str) TextOut((hdc), (x), (y), (str), strlen(str))
 #define TextOutCenter(hdc, y, str) TextOutWithDynamicLength((hdc), screenSize.x / 2 - (GetTextExtentPoint32Size(str).x) / 2, (y), (str));
 #define TextOutCenterGame(hdc, Y, str) TextOutWithDynamicLength((hdc), screenSize.y / 2 - (GetTextExtentPoint32Size(str).x) / 2, (Y), (str));
+#define randInRange(from, to) (rand() % ((to) - (from)) + (from))
 
 typedef enum appPages
 {
