@@ -29,9 +29,6 @@ typedef enum appPages
 	menuPage
 };
 appPages _presentPage = menuPage;
-
-LOGFONT font;
-HFONT hfont;
 bool cheats = false;
 
 void goToPage(appPages newAppState);
@@ -168,9 +165,8 @@ POINT GetTextExtentPoint32Size(const char* str)
 void App_Init()
 {
 	srand(time(NULL));
-	font.lfHeight = 24;
-	font.lfWidth = 12;
-	hfont = CreateFontIndirect(&font);
+	SetTextColor(mainWindowHDC, RGB(255, 255, 255));
+	SetBkColor(mainWindowHDC, RGB(0, 0, 0));
 }
 
 void App_Main()

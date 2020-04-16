@@ -126,10 +126,8 @@ void showCompas() //TODO
 {
 	HBRUSH oldBrush = (HBRUSH)SelectObject(mainWindowHDC, (HBRUSH)CreateSolidBrush(RGB(255, 255, 255)));
 
-	HFONT hCompasFont = CreateFontA(compasFontSize.y, compasFontSize.x, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ("Arial"));
 	SetTextColor(mainWindowHDC, RGB(255, 255, 255));
 	SetBkColor(mainWindowHDC, RGB(0, 0, 0));
-	HFONT oldFont = (HFONT)SelectObject(mainWindowHDC, hCompasFont);
 
 	relativeRectangle(compasPos.x + (0 * compasPosIndentation.x), compasPos.y + (0 * compasPosIndentation.y), compasFontSize.x, compasFontSize.y);
 	TextOut(mainWindowHDC, compasPos.x + (1 * compasPosIndentation.x), compasPos.y + (0 * compasPosIndentation.y), toString(directionName(player.viewDirection)), 1);
@@ -144,7 +142,6 @@ void showCompas() //TODO
 	relativeRectangle(compasPos.x + (2 * compasPosIndentation.x), compasPos.y + (2 * compasPosIndentation.y), compasFontSize.x, compasFontSize.y);
 
 	SelectObject(mainWindowHDC, oldBrush);
-	SelectObject(mainWindowHDC, oldFont);
 }
 constexpr POINT miniMapPos = { 520, 120 };
 constexpr POINT miniMapBlockSize = { 40, 40 };
