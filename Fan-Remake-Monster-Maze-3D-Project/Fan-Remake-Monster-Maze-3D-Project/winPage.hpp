@@ -47,9 +47,9 @@ void winPage_main()
 	colorEditCommandEnum colorEditCommand = colorEditCommandEnum(rand() % 2);
 	byte randomColor = rand() % 3;
 
-	if (colorEditCommand == add && winPage_presentRandomColorRGB[randomColor] < 256)
+	if (colorEditCommand == add && winPage_presentRandomColorRGB[randomColor] < UCHAR_MAX)
 		winPage_presentRandomColorRGB[randomColor]++;
-	else if(colorEditCommand == sub && winPage_presentRandomColorRGB[randomColor] > 0)
+	else if(colorEditCommand == sub && winPage_presentRandomColorRGB[randomColor] > CHAR_MIN)
 		winPage_presentRandomColorRGB[randomColor]--;
 
 	winPage_presentRandomColor = RGB(winPage_presentRandomColorRGB[R],

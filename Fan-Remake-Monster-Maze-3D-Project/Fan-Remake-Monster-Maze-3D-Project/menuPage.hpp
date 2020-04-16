@@ -56,7 +56,7 @@ void menuPage_onKeyPressed(unsigned int key)
 	{
 	case VK_SPACE:
 		if(menuPage_Cursor == onStart)
-			goToPage(winPage);
+			goToPage(gamePage);
 		else if(menuPage_Cursor == onSecondButton)
 			PostQuitMessage(0);
 		else if (menuPage_Cursor == onExit)
