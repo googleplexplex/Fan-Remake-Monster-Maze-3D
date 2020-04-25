@@ -31,7 +31,7 @@ void gamePage_onKeyPressed(unsigned int key)
 		player.turnAround();
 		break;
 	case KB_C:
-		cheats = !cheats;
+		usedCheats = !usedCheats;
 		break;
 	default:
 		break;

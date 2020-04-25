@@ -30,7 +30,7 @@ typedef enum appPages
 	menuPage
 };
 appPages _presentPage = menuPage;
-bool cheats = false;
+bool usedCheats = false;
 
 void goToPage(appPages newAppState);
 #include "winPage.hpp"

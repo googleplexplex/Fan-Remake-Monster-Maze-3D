@@ -108,7 +108,8 @@ public:
 	POINT pos;
 	direction target = null;
 	unsigned short targetRange = 0;
-	unsigned int speed = 1000;
+	const unsigned int speed = 1000;
+	bool runningAfterThePlayer = false;
 	std::pair<direction, unsigned short> seesPlayer() //return null, if false, direction if true
 	{
 		unsigned short rangeToPlayer = 1;
@@ -156,6 +157,8 @@ public:
 	}
 	bool inline monsterInTarget()
 	{
+		if (runningAfterThePlayer)
+			runningAfterThePlayer = false;
 		return (targetRange == 0);
 	}
 
@@ -306,6 +309,7 @@ public:
 
 		if (seePlayer.first != null)
 		{
+			runningAfterThePlayer = true;
 			target = seePlayer.first;
 			targetRange = seePlayer.second;
 		}
@@ -381,6 +385,7 @@ const POINT playerMapPosOffset = { 15, 20 };
 const POINT playerMapPos = { screenSize.x - mapXSize * playerMapBlockSize.x - playerMapPosOffset.x, screenSize.y - mapYSize * playerMapBlockSize.y - playerMapPosOffset.y };
 const COLORREF playerMapBlockColor = RGB(255, 255, 255);
 const COLORREF playerMapColor = RGB(0, 255, 0);
+const COLORREF monsterMapColor = RGB(255, 0, 0);
 void inline showPlayerBlock(int x, int y)
 {
 	POINT posBlockOnScreen = { playerMapPos.x + playerMapBlockSize.x * x, playerMapPos.y + playerMapBlockSize.y * y };
@@ -404,6 +409,13 @@ void showPlayerMap()
 	oldBrush = (HBRUSH)SelectObject(mainWindowHDC, (HBRUSH)CreateSolidBrush(playerMapColor));
 	showPlayerBlock(player.pos.x, player.pos.y);
 	SelectObject(mainWindowHDC, oldBrush);
+
+	if (usedCheats || monster.runningAfterThePlayer)
+	{
+		oldBrush = (HBRUSH)SelectObject(mainWindowHDC, (HBRUSH)CreateSolidBrush(monsterMapColor));
+		showPlayerBlock(monster.pos.x, monster.pos.y);
+		SelectObject(mainWindowHDC, oldBrush);
+	}
 }
 
 void showObject(block obj, short range, sidesEnum side)
