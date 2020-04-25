@@ -11,6 +11,12 @@ POINT GetTextExtentPoint32Size(const char* str);
 #define sqr(x) ((x)*(x))
 
 
+typedef enum playerBlock
+{
+	wasnot = 0,
+	was = 1
+};
+playerBlock playerMap[mapXSize][mapYSize];
 class playerClass
 {
 public:
@@ -30,6 +36,7 @@ public:
 		if (gameMap[goTo.x][goTo.y] != wall)
 		{
 			pos = goTo;
+			playerMap[goTo.x][goTo.y] = was;
 
 			if (gameMap[goTo.x][goTo.y] == door)
 				goToPage(winPage);
@@ -87,84 +94,6 @@ void showCompas() //TODO
 	relativeRectangle(compasPos.x + (0 * compasPosIndentation.x), compasPos.y + (2 * compasPosIndentation.y), compasFontSize.x, compasFontSize.y);
 	TextOut(mainWindowHDC, compasPos.x + (1 * compasPosIndentation.x), compasPos.y + (2 * compasPosIndentation.y), toString(directionName(turnDirectionAround(player.viewDirection))), 1);
 	relativeRectangle(compasPos.x + (2 * compasPosIndentation.x), compasPos.y + (2 * compasPosIndentation.y), compasFontSize.x, compasFontSize.y);
-
-	SelectObject(mainWindowHDC, oldBrush);
-}
-constexpr POINT miniMapPos = { 520, 120 };
-constexpr POINT miniMapBlockSize = { 40, 40 };
-void showMiniMap() //TODO
-{
-	HBRUSH oldBrush = (HBRUSH)SelectObject(mainWindowHDC, wallBrush);
-
-	switch (player.viewDirection)
-	{
-	case N:
-		for (int i = 0; i < 3; i++)
-		{
-			for (int j = 0; j < 3; j++)
-			{
-				if (gameMap[player.pos.x - 1 + j][player.pos.y - 1 + i] == wall)
-					relativeRectangle(miniMapPos.x + (j * miniMapBlockSize.x), miniMapPos.y + (i * miniMapBlockSize.y), miniMapBlockSize.x, miniMapBlockSize.y);
-				else
-				{
-					HBRUSH prevBrush = (HBRUSH)SelectObject(mainWindowHDC, noneBrush);
-					relativeRectangle(miniMapPos.x + (j * miniMapBlockSize.x), miniMapPos.y + (i * miniMapBlockSize.y), miniMapBlockSize.x, miniMapBlockSize.y);
-					SelectObject(mainWindowHDC, prevBrush);
-				}
-			}
-		}
-		break;
-	case W:
-		for (int i = 0; i < 3; i++)
-		{
-			for (int j = 0; j < 3; j++)
-			{
-				if (gameMap[player.pos.x + 1 - j][player.pos.y - 1 + i] == wall)
-					relativeRectangle(miniMapPos.x + (j * miniMapBlockSize.x), miniMapPos.y + (i * miniMapBlockSize.y), miniMapBlockSize.x, miniMapBlockSize.y);
-				else
-				{
-					HBRUSH prevBrush = (HBRUSH)SelectObject(mainWindowHDC, noneBrush);
-					relativeRectangle(miniMapPos.x + (j * miniMapBlockSize.x), miniMapPos.y + (i * miniMapBlockSize.y), miniMapBlockSize.x, miniMapBlockSize.y);
-					SelectObject(mainWindowHDC, prevBrush);
-				}
-			}
-		}
-		break;
-	case E:
-		for (int i = 0; i < 3; i++)
-		{
-			for (int j = 0; j < 3; j++)
-			{
-				if (gameMap[player.pos.x - 1 + j][player.pos.y + 1 - i] == wall)
-					relativeRectangle(miniMapPos.x + (j * miniMapBlockSize.x), miniMapPos.y + (i * miniMapBlockSize.y), miniMapBlockSize.x, miniMapBlockSize.y);
-				else
-				{
-					HBRUSH prevBrush = (HBRUSH)SelectObject(mainWindowHDC, noneBrush);
-					relativeRectangle(miniMapPos.x + (j * miniMapBlockSize.x), miniMapPos.y + (i * miniMapBlockSize.y), miniMapBlockSize.x, miniMapBlockSize.y);
-					SelectObject(mainWindowHDC, prevBrush);
-				}
-			}
-		}
-		break;
-	case S:
-		for (int i = 0; i < 3; i++)
-		{
-			for (int j = 0; j < 3; j++)
-			{
-				if (gameMap[player.pos.x + 1 - j][player.pos.y + 1 - i] == wall)
-					relativeRectangle(miniMapPos.x + (j * miniMapBlockSize.x), miniMapPos.y + (i * miniMapBlockSize.y), miniMapBlockSize.x, miniMapBlockSize.y);
-				else
-				{
-					HBRUSH prevBrush = (HBRUSH)SelectObject(mainWindowHDC, noneBrush);
-					relativeRectangle(miniMapPos.x + (j * miniMapBlockSize.x), miniMapPos.y + (i * miniMapBlockSize.y), miniMapBlockSize.x, miniMapBlockSize.y);
-					SelectObject(mainWindowHDC, prevBrush);
-				}
-			}
-		}
-		break;
-	default:
-		break;
-	}
 
 	SelectObject(mainWindowHDC, oldBrush);
 }
@@ -432,17 +361,14 @@ void showStatus()
 }
 
 //TOLIB
-typedef enum playerBlock
-{
-	wasnot = 0,
-	was
-};
-playerBlock playerMap[mapXSize][mapYSize];
 void inline clearPlayerMap()
 {
 	for (int i = 0; i < mapXSize; i++)
 	{
-		memset(playerMap[i], 0, sizeof(playerBlock));
+		for (int j = 0; j < mapYSize; j++)
+		{
+			playerMap[i][j] = wasnot;
+		}
 	}
 }
 void inline updatePlayerMap(POINT updatedPoint)
@@ -450,9 +376,34 @@ void inline updatePlayerMap(POINT updatedPoint)
 	if (playerMap[updatedPoint.x][updatedPoint.y] == wasnot)
 		playerMap[updatedPoint.x][updatedPoint.y] = was;
 }
-void showMap()
+const POINT playerMapBlockSize = { 12, 12 };
+const POINT playerMapPosOffset = { 15, 20 };
+const POINT playerMapPos = { screenSize.x - mapXSize * playerMapBlockSize.x - playerMapPosOffset.x, screenSize.y - mapYSize * playerMapBlockSize.y - playerMapPosOffset.y };
+const COLORREF playerMapBlockColor = RGB(255, 255, 255);
+const COLORREF playerMapColor = RGB(0, 255, 0);
+void inline showPlayerBlock(int x, int y)
 {
-	
+	POINT posBlockOnScreen = { playerMapPos.x + playerMapBlockSize.x * x, playerMapPos.y + playerMapBlockSize.y * y };
+	Rectangle(mainWindowHDC, posBlockOnScreen.x, posBlockOnScreen.y, posBlockOnScreen.x + playerMapBlockSize.x, posBlockOnScreen.y + playerMapBlockSize.y);
+}
+void showPlayerMap()
+{
+	HBRUSH oldBrush = (HBRUSH)SelectObject(mainWindowHDC, (HBRUSH)CreateSolidBrush(playerMapBlockColor));
+	for (int i = 0; i < mapYSize; i++)
+	{
+		for (int j = 0; j < mapXSize; j++)
+		{
+			if (playerMap[j][i] == was)
+			{
+				showPlayerBlock(j, i);
+			}
+		}
+	}
+	SelectObject(mainWindowHDC, oldBrush);
+
+	oldBrush = (HBRUSH)SelectObject(mainWindowHDC, (HBRUSH)CreateSolidBrush(playerMapColor));
+	showPlayerBlock(player.pos.x, player.pos.y);
+	SelectObject(mainWindowHDC, oldBrush);
 }
 
 void showObject(block obj, short range, sidesEnum side)
@@ -536,11 +487,9 @@ void showGameCanvas()
 		break;
 	}
 
-	if (cheats) //Чит-коды
-		showMap();
 
+	showPlayerMap(); //Отрисовка мини-карты
 	showCompas(); //Отображение компаса
-	showMiniMap(); //Отрисовка мини-карты
 	showStatus();
 }
 
