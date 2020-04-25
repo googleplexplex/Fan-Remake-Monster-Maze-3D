@@ -5,65 +5,12 @@
 #include <atomic>
 #include "map.hpp"
 #include "output.hpp"
+#include "direction.hpp"
 POINT GetTextExtentPoint32Size(const char* str);
 #define pointsEqual(f, s) (((f).x == (s).x) && ((f).y == (s).y))
 #define sqr(x) ((x)*(x))
 
-typedef enum direction {
-	N = 0,
-	W = 1,
-	E = 2,
-	S = 3,
-	null
-};
-//-N-
-//W-E
-//-S-
 
-direction inline turnDirectionLeft(direction rolledDirection)
-{
-	switch (rolledDirection)
-	{
-	case N: return W;
-	case W: return S;
-	case S: return E;
-	default:
-	case E: return N;
-	}
-}
-direction inline turnDirectionRight(direction rolledDirection)
-{
-	switch (rolledDirection)
-	{
-	case N: return E;
-	case E: return S;
-	case S: return W;
-	default:
-	case W: return N;
-	}
-}
-direction inline turnDirectionAround(direction rolledDirection)
-{
-	switch (rolledDirection)
-	{
-	case N: return S;
-	case E: return W;
-	case S: return N;
-	default:
-	case W: return E;
-	}
-}
-char inline directionName(direction rolledDirection)
-{
-	switch (rolledDirection)
-	{
-	case N: return 'N';
-	case E: return 'E';
-	case S: return 'S';
-	case W: return 'W';
-	default: return NULL;
-	}
-}
 class playerClass
 {
 public:
@@ -484,53 +431,28 @@ void showStatus()
 	}
 }
 
-
-
-void generateGame()
-{
-	generateMap();
-	gameMap[mapXSize - 2][mapYSize - 1] = door;
-	player.pos.x = player.pos.y = 1;
-	monster.pos = { mapXSize / 2, mapYSize / 2 };
-	for (int i = mapYSize / 2; i != 0; i--)
-	{
-		if (gameMap[monster.pos.x][i] == none)
-		{
-			monster.pos.y = i;
-			break;
-		}
-	}
-	for (int i = mapXSize / 2; i != 0; i--)
-	{
-		if (gameMap[i][monster.pos.y] == none)
-		{
-			monster.pos.x = i;
-			break;
-		}
-	}
-	monster.setFirstTarget();
-}
-
-
 //TOLIB
+typedef enum playerBlock
+{
+	wasnot = 0,
+	was
+};
+playerBlock playerMap[mapXSize][mapYSize];
+void inline clearPlayerMap()
+{
+	for (int i = 0; i < mapXSize; i++)
+	{
+		memset(playerMap[i], 0, sizeof(playerBlock));
+	}
+}
+void inline updatePlayerMap(POINT updatedPoint)
+{
+	if (playerMap[updatedPoint.x][updatedPoint.y] == wasnot)
+		playerMap[updatedPoint.x][updatedPoint.y] = was;
+}
 void showMap()
 {
-	HBRUSH hOldBrush = (HBRUSH)SelectObject(mainWindowHDC, (HBRUSH)CreateSolidBrush(RGB(rand() % 255, rand() % 255, rand() % 255)));
-
-	for (int i = 0; i < mapYSize; i++)
-	{
-		for (int j = 0; j < mapXSize; j++)
-		{
-			if (gameMap[j][i] == wall)
-			{
-				showCube(j, i);
-			}
-		}
-	}
-	showCube(player.pos, RGB(0, 255, 0));
-	showCube(monster.pos, RGB(255, 0, 0));
-
-	SelectObject(mainWindowHDC, hOldBrush);
+	
 }
 
 void showObject(block obj, short range, sidesEnum side)
@@ -622,6 +544,35 @@ void showGameCanvas()
 	showStatus();
 }
 
+
+
+void generateGame()
+{
+	generateMap();
+	gameMap[mapXSize - 2][mapYSize - 1] = door;
+
+	player.pos.x = player.pos.y = 1;
+	clearPlayerMap();
+
+	monster.pos = { mapXSize / 2, mapYSize / 2 };
+	for (int i = mapYSize / 2; i != 0; i--)
+	{
+		if (gameMap[monster.pos.x][i] == none)
+		{
+			monster.pos.y = i;
+			break;
+		}
+	}
+	for (int i = mapXSize / 2; i != 0; i--)
+	{
+		if (gameMap[i][monster.pos.y] == none)
+		{
+			monster.pos.x = i;
+			break;
+		}
+	}
+	monster.setFirstTarget();
+}
 
 std::atomic_bool callGameTick = true;
 void Game_Tick()

@@ -118,6 +118,7 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="direction.hpp" />
     <ClInclude Include="game.hpp" />
     <ClInclude Include="gamePage.hpp" />
     <ClInclude Include="losePage.hpp" />

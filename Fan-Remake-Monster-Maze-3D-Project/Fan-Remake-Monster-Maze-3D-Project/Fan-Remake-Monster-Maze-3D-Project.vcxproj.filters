@@ -16,6 +16,9 @@
     <Filter Include="Файлы заголовков\pages">
       <UniqueIdentifier>{b4ec772a-5bb3-493a-8d2c-9485d0726978}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Файлы заголовков\gameFiles">
+      <UniqueIdentifier>{a31a38a9-4461-42aa-8f69-234e7f15bdfa}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -23,15 +26,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="map.hpp">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
-    <ClInclude Include="output.hpp">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
-    <ClInclude Include="game.hpp">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
     <ClInclude Include="pageDispather.hpp">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
@@ -46,6 +40,18 @@
     </ClInclude>
     <ClInclude Include="menuPage.hpp">
       <Filter>Файлы заголовков\pages</Filter>
+    </ClInclude>
+    <ClInclude Include="game.hpp">
+      <Filter>Файлы заголовков\gameFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="map.hpp">
+      <Filter>Файлы заголовков\gameFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="output.hpp">
+      <Filter>Файлы заголовков\gameFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="direction.hpp">
+      <Filter>Файлы заголовков\gameFiles</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
