@@ -16,7 +16,7 @@ typedef enum playerBlock
 	wasnot = 0,
 	was = 1
 };
-playerBlock playerMap[mapXSize][mapYSize];
+playerBlock playerMap[mapSize.x][mapSize.y];
 class playerClass
 {
 public:
@@ -109,7 +109,7 @@ public:
 	direction target = null;
 	unsigned short targetRange = 0;
 	const unsigned int speed = 1000;
-	bool runningAfterThePlayer = false;
+	bool seeThePlayer = false;
 	std::pair<direction, unsigned short> seesPlayer() //return null, if false, direction if true
 	{
 		unsigned short rangeToPlayer = 1;
@@ -157,8 +157,8 @@ public:
 	}
 	bool inline monsterInTarget()
 	{
-		if (runningAfterThePlayer)
-			runningAfterThePlayer = false;
+		if (seeThePlayer)
+			seeThePlayer = false;
 		return (targetRange == 0);
 	}
 
@@ -309,7 +309,7 @@ public:
 
 		if (seePlayer.first != null)
 		{
-			runningAfterThePlayer = true;
+			seeThePlayer = true;
 			target = seePlayer.first;
 			targetRange = seePlayer.second;
 		}
@@ -367,9 +367,9 @@ void showStatus()
 //TOLIB
 void inline clearPlayerMap()
 {
-	for (int i = 0; i < mapXSize; i++)
+	for (int i = 0; i < mapSize.x; i++)
 	{
-		for (int j = 0; j < mapYSize; j++)
+		for (int j = 0; j < mapSize.y; j++)
 		{
 			playerMap[i][j] = wasnot;
 		}
@@ -382,7 +382,7 @@ void inline updatePlayerMap(POINT updatedPoint)
 }
 const POINT playerMapBlockSize = { 12, 12 };
 const POINT playerMapPosOffset = { 15, 20 };
-const POINT playerMapPos = { screenSize.x - mapXSize * playerMapBlockSize.x - playerMapPosOffset.x, screenSize.y - mapYSize * playerMapBlockSize.y - playerMapPosOffset.y };
+const POINT playerMapPos = { screenSize.x - mapSize.x * playerMapBlockSize.x - playerMapPosOffset.x, screenSize.y - mapSize.y * playerMapBlockSize.y - playerMapPosOffset.y };
 const COLORREF playerMapBlockColor = RGB(255, 255, 255);
 const COLORREF playerMapColor = RGB(0, 255, 0);
 const COLORREF monsterMapColor = RGB(255, 0, 0);
@@ -394,9 +394,9 @@ void inline showPlayerBlock(int x, int y)
 void showPlayerMap()
 {
 	HBRUSH oldBrush = (HBRUSH)SelectObject(mainWindowHDC, (HBRUSH)CreateSolidBrush(playerMapBlockColor));
-	for (int i = 0; i < mapYSize; i++)
+	for (int i = 0; i < mapSize.y; i++)
 	{
-		for (int j = 0; j < mapXSize; j++)
+		for (int j = 0; j < mapSize.x; j++)
 		{
 			if (playerMap[j][i] == was)
 			{
@@ -410,7 +410,7 @@ void showPlayerMap()
 	showPlayerBlock(player.pos.x, player.pos.y);
 	SelectObject(mainWindowHDC, oldBrush);
 
-	if (usedCheats || monster.runningAfterThePlayer)
+	if (usedCheats || monster.seeThePlayer)
 	{
 		oldBrush = (HBRUSH)SelectObject(mainWindowHDC, (HBRUSH)CreateSolidBrush(monsterMapColor));
 		showPlayerBlock(monster.pos.x, monster.pos.y);
@@ -418,6 +418,16 @@ void showPlayerMap()
 	}
 }
 
+block getObject(int x, int y)
+{
+	if (monster.pos.x == x && monster.pos.y == y)
+		return monsterUM;
+	return gameMap[x][y];
+}
+block getObject(POINT gettedPoint)
+{
+	return getObject(gettedPoint.x, gettedPoint.y);
+}
 void showObject(block obj, short range, sidesEnum side)
 {
 	if (obj == wall)
@@ -426,79 +436,28 @@ void showObject(block obj, short range, sidesEnum side)
 		showNone(range, side);
 	else if (obj == door)
 		showDoor(range, side);
+	else if (obj == monsterUM)
+		showMonster(range, side);
 }
 
 void showGameCanvas()
 {
 	int rangeViewedPass = 0;
-	switch (player.viewDirection) //Отрисовка левой и правой сторон лабиринта
-	{
-	case N:
-		for (; gameMap[player.pos.x][player.pos.y - rangeViewedPass] == none && rangeViewedPass < 6; rangeViewedPass++)
-		{
-			showObject(gameMap[player.pos.x - 1][player.pos.y - rangeViewedPass], rangeViewedPass, leftSide);
-			showObject(gameMap[player.pos.x + 1][player.pos.y - rangeViewedPass], rangeViewedPass, rightSide);
-		}
-		break;
-	case W:
-		for (; gameMap[player.pos.x - rangeViewedPass][player.pos.y] == none && rangeViewedPass < 6; rangeViewedPass++)
-		{
-			showObject(gameMap[player.pos.x - rangeViewedPass][player.pos.y + 1], rangeViewedPass, leftSide);
-			showObject(gameMap[player.pos.x - rangeViewedPass][player.pos.y - 1], rangeViewedPass, rightSide);
-		}
-		break;
-	case E:
-		for (; gameMap[player.pos.x + rangeViewedPass][player.pos.y] == none && rangeViewedPass < 6; rangeViewedPass++)
-		{
-			showObject(gameMap[player.pos.x + rangeViewedPass][player.pos.y - 1], rangeViewedPass, leftSide);
-			showObject(gameMap[player.pos.x + rangeViewedPass][player.pos.y + 1], rangeViewedPass, rightSide);
-		}
-		break;
-	case S:
-		for (; gameMap[player.pos.x][player.pos.y + rangeViewedPass] == none && rangeViewedPass < 6; rangeViewedPass++)
-		{
-			showObject(gameMap[player.pos.x + 1][player.pos.y + rangeViewedPass], rangeViewedPass, leftSide);
-			showObject(gameMap[player.pos.x - 1][player.pos.y + rangeViewedPass], rangeViewedPass, rightSide);
-		}
-		break;
-	}
+	POINT viewPoint = player.pos;
 
-	switch (player.viewDirection) //Отрисовка стены лабиринта перед игроком
+	while(getObject(viewPoint) == none && rangeViewedPass < 6) //Отображение всех объектов карты
 	{
-	case N:
-		showObject(gameMap[player.pos.x][player.pos.y - rangeViewedPass], rangeViewedPass, frontSide);
-		break;
-	case W:
-		showObject(gameMap[player.pos.x - rangeViewedPass][player.pos.y], rangeViewedPass, frontSide);
-		break;
-	case E:
-		showObject(gameMap[player.pos.x + rangeViewedPass][player.pos.y], rangeViewedPass, frontSide);
-		break;
-	case S:
-		showObject(gameMap[player.pos.x][player.pos.y + rangeViewedPass], rangeViewedPass, frontSide);
-		break;
-	}
+		updatePlayerMap(viewPoint);
 
-	switch (player.viewDirection) //Отрисовка остальных объектов
-	{
-	case N:
-		if (monster.pos.x == player.pos.x && player.pos.y > monster.pos.y && monster.pos.y > player.pos.y - rangeViewedPass)
-			showMonster(player.pos.y - monster.pos.y);
-		break;
-	case W:
-		if (monster.pos.y == player.pos.y && player.pos.x < monster.pos.x && monster.pos.x < player.pos.x - rangeViewedPass)
-			showMonster(monster.pos.x - player.pos.x);
-		break;
-	case E:
-		if (monster.pos.y == player.pos.y && player.pos.x > monster.pos.x && monster.pos.x > player.pos.x + rangeViewedPass)
-			showMonster(player.pos.x - monster.pos.x);
-		break;
-	case S:
-		if (monster.pos.x == player.pos.x && player.pos.y < monster.pos.y && monster.pos.y < player.pos.y + rangeViewedPass)
-			showMonster(monster.pos.y - player.pos.y);
-		break;
-	}
+		POINT viewPointLeft = moveDirectionLeft(viewPoint, player.viewDirection);
+		POINT viewPointRight = moveDirectionRight(viewPoint, player.viewDirection);
+		showObject(getObject(viewPointLeft), rangeViewedPass, leftSide);
+		showObject(getObject(viewPointRight), rangeViewedPass, rightSide);
 
+		viewPoint = moveDirectionForward(viewPoint, player.viewDirection);
+		rangeViewedPass++;
+	}
+	showObject(getObject(viewPoint), rangeViewedPass, frontSide);
 
 	showPlayerMap(); //Отрисовка мини-карты
 	showCompas(); //Отображение компаса
@@ -510,13 +469,14 @@ void showGameCanvas()
 void generateGame()
 {
 	generateMap();
-	gameMap[mapXSize - 2][mapYSize - 1] = door;
+	gameMap[mapSize.x - 2][mapSize.y - 1] = door;
 
-	player.pos.x = player.pos.y = 1;
+	player.pos.x = mapSize.x - 2;
+	player.pos.y = mapSize.y - 2;
 	clearPlayerMap();
 
-	monster.pos = { mapXSize / 2, mapYSize / 2 };
-	for (int i = mapYSize / 2; i != 0; i--)
+	monster.pos = { mapSize.x / 2, mapSize.y / 2 };
+	for (int i = mapSize.y / 2; i != 0; i--)
 	{
 		if (gameMap[monster.pos.x][i] == none)
 		{
@@ -524,7 +484,7 @@ void generateGame()
 			break;
 		}
 	}
-	for (int i = mapXSize / 2; i != 0; i--)
+	for (int i = mapSize.x / 2; i != 0; i--)
 	{
 		if (gameMap[i][monster.pos.y] == none)
 		{

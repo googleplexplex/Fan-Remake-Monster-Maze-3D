@@ -92,7 +92,7 @@ VERTICAL_TRAPEZE getTrapezeCoords(short range, sidesEnum side)
 			return cubeSquareInCenter(1 + 1 + 2 + 4); //8
 		case 2:
 			return cubeSquareInCenter(1 + 1 + 2 + 4 + 6); //14
-		case 1:
+		default:
 			return cubeSquareInCenter(1 + 1 + 2 + 4 + 6 + 8); //22
 		}
 	}
@@ -116,12 +116,9 @@ void inline showNone(short range, sidesEnum side)
 	wallPrototype.biggestBaseS.y = wallPrototype.smallestBaseS.y;
 	trapeze(wallPrototype, noneBrush);
 }
-void inline showMonster(short range) //TOFIX
+void inline showMonster(short range, sidesEnum side)
 {
-	VERTICAL_TRAPEZE wallPrototype = getTrapezeCoords(range, frontSide);
-	wallPrototype.biggestBaseF.y = wallPrototype.smallestBaseF.y;
-	wallPrototype.biggestBaseS.y = wallPrototype.smallestBaseS.y;
-	trapeze(wallPrototype, monsterBrush);
+	trapeze(getTrapezeCoords(range, side), monsterBrush);
 }
 void inline showDoor(short range, sidesEnum side)
 {
