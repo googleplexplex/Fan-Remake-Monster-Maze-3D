@@ -21,22 +21,14 @@ class playerClass
 {
 public:
 	POINT pos;
-	direction viewDirection = E;
+	direction viewDirection = S;
 	void moveForward()
 	{
-		POINT goTo = pos;
-		switch (viewDirection)
-		{
-		case N: goTo.y--; break;
-		case W: goTo.x--; break;
-		case E: goTo.x++; break;
-		case S: goTo.y++; break;
-		}
+		POINT goTo = moveDirectionForward(pos, viewDirection);
 
 		if (gameMap[goTo.x][goTo.y] != wall)
 		{
 			pos = goTo;
-			playerMap[goTo.x][goTo.y] = was;
 
 			if (gameMap[goTo.x][goTo.y] == door)
 				goToPage(winPage);
@@ -102,6 +94,10 @@ double inline getRangeBehind(POINT f, POINT s)
 	return sqrt(sqr(s.x - f.x) + sqr(s.y - f.y));
 }
 
+
+block getObject(int x, int y);
+block getObject(POINT gettedPoint);
+void showObject(block obj, short range, sidesEnum side);
 class monsterClass
 {
 public:
@@ -177,52 +173,20 @@ public:
 		void fill(POINT scannedPos, direction scannedDirection)
 		{
 			unsigned short range = 1;
-			switch (scannedDirection)
+			POINT presentScannedPos = moveDirectionForward(scannedPos, scannedDirection);
+
+			while (getObject(presentScannedPos) != wall)
 			{
-			case N:
-				while (gameMap[scannedPos.x][scannedPos.y - range] != wall)
+				POINT viewPointLeft = moveDirectionLeft(presentScannedPos, scannedDirection);
+				POINT viewPointRight = moveDirectionRight(presentScannedPos, scannedDirection);
+				if (getObject(viewPointLeft) == none || getObject(viewPointRight) == none)
 				{
-					if (gameMap[scannedPos.x - 1][scannedPos.y - range] == none || gameMap[scannedPos.x + 1][scannedPos.y - range] == none)
-					{
-						isPass = true;
-						addRange(range);
-					}
-					range++;
+					isPass = true;
+					addRange(range);
 				}
-				return;
-			case W:
-				while (gameMap[scannedPos.x - range][scannedPos.y] != wall)
-				{
-					if (gameMap[scannedPos.x - range][scannedPos.y - 1] == none || gameMap[scannedPos.x - range][scannedPos.y + 1] == none)
-					{
-						isPass = true;
-						addRange(range);
-					}
-					range++;
-				}
-				return;
-			case E:
-				while (gameMap[scannedPos.x + range][scannedPos.y] != wall)
-				{
-					if (gameMap[scannedPos.x + range][scannedPos.y - 1] == none || gameMap[scannedPos.x + range][scannedPos.y + 1] == none)
-					{
-						isPass = true;
-						addRange(range);
-					}
-					range++;
-				}
-				return;
-			case S:
-				while (gameMap[scannedPos.x][scannedPos.y + range] != wall)
-				{
-					if (gameMap[scannedPos.x - 1][scannedPos.y + range] == none || gameMap[scannedPos.x + 1][scannedPos.y + range] == none)
-					{
-						isPass = true;
-						addRange(range);
-					}
-					range++;
-				}
-				return;
+
+				presentScannedPos = moveDirectionForward(presentScannedPos, scannedDirection);
+				range++;
 			}
 		}
 	};
@@ -294,13 +258,7 @@ public:
 	}
 	void moveToTarget()
 	{
-		switch (target)
-		{
-		case N: pos.y--; break;
-		case W: pos.x--; break;
-		case E: pos.x++; break;
-		case S: pos.y++; break;
-		}
+		monster.pos = moveDirectionForward(monster.pos, target);
 		targetRange--;
 	}
 	void alifeTick()
@@ -394,13 +352,28 @@ void inline showPlayerBlock(int x, int y)
 void showPlayerMap()
 {
 	HBRUSH oldBrush = (HBRUSH)SelectObject(mainWindowHDC, (HBRUSH)CreateSolidBrush(playerMapBlockColor));
-	for (int i = 0; i < mapSize.y; i++)
+	if (usedCheats)
 	{
-		for (int j = 0; j < mapSize.x; j++)
+		for (int i = 0; i < mapSize.y; i++)
 		{
-			if (playerMap[j][i] == was)
+			for (int j = 0; j < mapSize.x; j++)
 			{
-				showPlayerBlock(j, i);
+				if (gameMap[j][i] == wall)
+				{
+					showPlayerBlock(j, i);
+				}
+			}
+		}
+	}
+	else {
+		for (int i = 0; i < mapSize.y; i++)
+		{
+			for (int j = 0; j < mapSize.x; j++)
+			{
+				if (playerMap[j][i] == was)
+				{
+					showPlayerBlock(j, i);
+				}
 			}
 		}
 	}
@@ -417,6 +390,7 @@ void showPlayerMap()
 		SelectObject(mainWindowHDC, oldBrush);
 	}
 }
+
 
 block getObject(int x, int y)
 {

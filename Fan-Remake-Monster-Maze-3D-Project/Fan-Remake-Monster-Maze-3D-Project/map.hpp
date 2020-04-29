@@ -10,10 +10,6 @@ typedef enum block {
 };
 constexpr POINT mapSize = { 25, 25 };
 block gameMap[mapSize.x][mapSize.y];
-block getFromMap(POINT point)
-{
-	return gameMap[point.x][point.y];
-}
 constexpr POINT doorPos = { mapSize.x - 2, mapSize.y - 1 };
 
 bool deadEnd(int x, int y) {
