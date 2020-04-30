@@ -349,6 +349,7 @@ void inline showPlayerBlock(int x, int y)
 	POINT posBlockOnScreen = { playerMapPos.x + playerMapBlockSize.x * x, playerMapPos.y + playerMapBlockSize.y * y };
 	Rectangle(mainWindowHDC, posBlockOnScreen.x, posBlockOnScreen.y, posBlockOnScreen.x + playerMapBlockSize.x, posBlockOnScreen.y + playerMapBlockSize.y);
 }
+
 void showPlayerMap()
 {
 	HBRUSH oldBrush = (HBRUSH)SelectObject(mainWindowHDC, (HBRUSH)CreateSolidBrush(playerMapBlockColor));
@@ -380,7 +381,37 @@ void showPlayerMap()
 	SelectObject(mainWindowHDC, oldBrush);
 
 	oldBrush = (HBRUSH)SelectObject(mainWindowHDC, (HBRUSH)CreateSolidBrush(playerMapColor));
-	showPlayerBlock(player.pos.x, player.pos.y);
+
+	POINT playerCursorPoint_left_up = { playerMapPos.x + playerMapBlockSize.x * player.pos.x, playerMapPos.y + playerMapBlockSize.y * player.pos.y };
+	POINT playerCursorPoint_right_up = { playerMapPos.x + playerMapBlockSize.x * (player.pos.x + 1), playerMapPos.y + playerMapBlockSize.y * player.pos.y };
+	POINT playerCursorPoint_left_down = { playerMapPos.x + playerMapBlockSize.x * player.pos.x, playerMapPos.y + playerMapBlockSize.y * (player.pos.y + 1) };
+	POINT playerCursorPoint_right_down = { playerMapPos.x + playerMapBlockSize.x * (player.pos.x + 1), playerMapPos.y + playerMapBlockSize.y * (player.pos.y + 1) };
+
+	POINT playerCursorPoint_up = { playerMapPos.x + playerMapBlockSize.x * player.pos.x + playerMapBlockSize.x * 0.5, playerMapPos.y + playerMapBlockSize.y * player.pos.y };
+	POINT playerCursorPoint_left = { playerMapPos.x + playerMapBlockSize.x * player.pos.x, playerMapPos.y + playerMapBlockSize.y * player.pos.y + playerMapBlockSize.y * 0.5 };
+	POINT playerCursorPoint_down = { playerMapPos.x + playerMapBlockSize.x * player.pos.x + playerMapBlockSize.x * 0.5, playerMapPos.y + playerMapBlockSize.y * (player.pos.y + 1) };
+	POINT playerCursorPoint_right = { playerMapPos.x + playerMapBlockSize.x * (player.pos.x + 1), playerMapPos.y + playerMapBlockSize.y * player.pos.y + playerMapBlockSize.y * 0.5 };
+
+	POINT playerCursor_up[3] = { playerCursorPoint_up, playerCursorPoint_left_down, playerCursorPoint_right_down };
+	POINT playerCursor_left[3] = { playerCursorPoint_left, playerCursorPoint_right_up, playerCursorPoint_right_down };
+	POINT playerCursor_right[3] = { playerCursorPoint_right, playerCursorPoint_left_up, playerCursorPoint_left_down };
+	POINT playerCursor_down[3] = { playerCursorPoint_down, playerCursorPoint_left_up, playerCursorPoint_right_up };
+
+	switch (player.viewDirection)
+	{
+	case N:
+		Polygon(mainWindowHDC, playerCursor_up, 3);
+		break;
+	case W:
+		Polygon(mainWindowHDC, playerCursor_left, 3);
+		break;
+	case E:
+		Polygon(mainWindowHDC, playerCursor_right, 3);
+		break;
+	case S:
+		Polygon(mainWindowHDC, playerCursor_down, 3);
+		break;
+	}
 	SelectObject(mainWindowHDC, oldBrush);
 
 	if (usedCheats || monster.seeThePlayer)
@@ -445,10 +476,11 @@ void generateGame()
 	generateMap();
 	gameMap[mapSize.x - 2][mapSize.y - 1] = door;
 
-	player.pos.x = mapSize.x - 2;
-	player.pos.y = mapSize.y - 2;
+	player.pos.x = 1;
+	player.pos.y = 1;
 	clearPlayerMap();
 
+	monster.seeThePlayer = false;
 	monster.pos = { mapSize.x / 2, mapSize.y / 2 };
 	for (int i = mapSize.y / 2; i != 0; i--)
 	{
