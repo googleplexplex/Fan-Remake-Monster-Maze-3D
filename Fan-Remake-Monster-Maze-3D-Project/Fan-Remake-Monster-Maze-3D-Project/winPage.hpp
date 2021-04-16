@@ -8,9 +8,9 @@ byte winPage_presentRandomColorRGB[3];
 
 void winPage_onCalled()
 {
-	winPage_presentRandomColorRGB[R] = randInRange(125, 255);
-	winPage_presentRandomColorRGB[G] = randInRange(125, 255);
-	winPage_presentRandomColorRGB[B] = randInRange(125, 255);
+	winPage_presentRandomColorRGB[R] = 0;
+	winPage_presentRandomColorRGB[G] = 0;
+	winPage_presentRandomColorRGB[B] = 0;
 	winPage_presentRandomColor = RGB(winPage_presentRandomColorRGB[R],
 		winPage_presentRandomColorRGB[G],
 		winPage_presentRandomColorRGB[B]);
@@ -36,21 +36,39 @@ void winPage_onKeyPressed(unsigned int key)
 	}
 }
 
-typedef enum colorEditCommandEnum
-{
-	add = 0,
-	sub
-};
+byte presentEditedColor = R;
+bool editColorUp = true;
+const int slowKoef = 50;
 
+int presentKoef = 0;
 void winPage_main()
 {
-	colorEditCommandEnum colorEditCommand = colorEditCommandEnum(rand() % 2);
-	byte randomColor = rand() % 3;
+	if (presentKoef == slowKoef)
+	{
+		if (winPage_presentRandomColorRGB[presentEditedColor] == UCHAR_MAX && editColorUp)
+		{
+			presentEditedColor = (presentEditedColor + 1) % 3;
 
-	if (colorEditCommand == add && winPage_presentRandomColorRGB[randomColor] < UCHAR_MAX)
-		winPage_presentRandomColorRGB[randomColor]++;
-	else if(colorEditCommand == sub && winPage_presentRandomColorRGB[randomColor] > CHAR_MIN)
-		winPage_presentRandomColorRGB[randomColor]--;
+			if (winPage_presentRandomColorRGB[presentEditedColor] == UCHAR_MAX)
+				editColorUp = false;
+		}
+		else if (winPage_presentRandomColorRGB[presentEditedColor] == 0 && editColorUp == false)
+		{
+			presentEditedColor = (presentEditedColor + 1) % 3;
+
+			if (winPage_presentRandomColorRGB[presentEditedColor] == 0)
+				editColorUp = true;
+		}
+
+		if (editColorUp)
+			winPage_presentRandomColorRGB[presentEditedColor]++;
+		else
+			winPage_presentRandomColorRGB[presentEditedColor]--;
+
+		presentKoef = 0;
+	}
+
+	presentKoef++;
 
 	winPage_presentRandomColor = RGB(winPage_presentRandomColorRGB[R],
 		winPage_presentRandomColorRGB[G],
