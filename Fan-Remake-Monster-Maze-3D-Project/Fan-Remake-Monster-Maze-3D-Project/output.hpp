@@ -5,7 +5,9 @@ HBRUSH blackBrush = CreateSolidBrush(RGB(0, 0, 0));
 HBRUSH wallBrush = CreateSolidBrush(RGB(169, 169, 169));
 HBRUSH noneBrush = CreateSolidBrush(RGB(128, 128, 128));
 HBRUSH doorBrush = CreateSolidBrush(RGB(0, 255, 0));
-HBRUSH monsterBrush = CreateSolidBrush(RGB(255, 0, 0));
+HBRUSH monsterBodyBrush = CreateSolidBrush(RGB(41, 41, 41));
+HBRUSH monsterEyesBrush = CreateSolidBrush(RGB(255, 0, 0));
+HBRUSH monsterMouthBrush = CreateSolidBrush(RGB(15, 15, 15));
 struct LINE
 {
 	POINT f;
@@ -146,10 +148,10 @@ void inline showCube(POINT pos, COLORREF color)
  char monsterSprite[11][11] = {
 	"   ###    ",
 	"  #####   ",
-	"  # # ### ",
+	"  #.#.### ",
 	" #########",
-	"###   ####",
-	"###   ### ",
+	"###MMM####",
+	"###MMM### ",
 	"# ####### ",
 	"   #######",
 	"  ###  ## ",
@@ -180,14 +182,25 @@ void inline showMonster(short range, sidesEnum side)
 			{
 				if (monsterSprite[y][x] == '#')
 				{
-					HBRUSH oldBrush = (HBRUSH)SelectObject(mainWindowHDC, monsterBrush);
+					HBRUSH oldBrush = (HBRUSH)SelectObject(mainWindowHDC, monsterBodyBrush);
 					Cube(mainWindowHDC, upLeftSpritePoint.x + oneSpriteCubeSize.x * x + 1, upLeftSpritePoint.y + oneSpriteCubeSize.y * y + 1, oneSpriteCubeSize.x);
-					//Rectangle(mainWindowHDC, upLeftSpritePoint.x + oneSpriteCubeSize.x * x, upLeftSpritePoint.y + oneSpriteCubeSize.y * y, screenSize.x - (upLeftSpritePoint.x + oneSpriteCubeSize.x * (x + 1)), screenSize.y - (upLeftSpritePoint.y + oneSpriteCubeSize.y * (y + 1)));
+					SelectObject(mainWindowHDC, oldBrush);
+				}
+				else if (monsterSprite[y][x] == '.')
+				{
+					HBRUSH oldBrush = (HBRUSH)SelectObject(mainWindowHDC, monsterEyesBrush);
+					Cube(mainWindowHDC, upLeftSpritePoint.x + oneSpriteCubeSize.x * x + 1, upLeftSpritePoint.y + oneSpriteCubeSize.y * y + 1, oneSpriteCubeSize.x);
+					SelectObject(mainWindowHDC, oldBrush);
+				}
+				else if (monsterSprite[y][x] == 'M')
+				{
+					HBRUSH oldBrush = (HBRUSH)SelectObject(mainWindowHDC, monsterMouthBrush);
+					Cube(mainWindowHDC, upLeftSpritePoint.x + oneSpriteCubeSize.x * x + 1, upLeftSpritePoint.y + oneSpriteCubeSize.y * y + 1, oneSpriteCubeSize.x);
 					SelectObject(mainWindowHDC, oldBrush);
 				}
 			}
 		}
 	}
 	else
-		trapeze(getTrapezeCoords(range, side), monsterBrush);
+		trapeze(getTrapezeCoords(range, side), monsterBodyBrush);
 }
