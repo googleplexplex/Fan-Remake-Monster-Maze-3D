@@ -450,8 +450,22 @@ void showGameCanvas()
 	int rangeViewedPass = 0;
 	POINT viewPoint = player.pos;
 
-	while(getObject(viewPoint) == none && rangeViewedPass < 6) //Отображение всех объектов карты
+	bool isMonstorInFront = false;
+	int monsterInFrontRange = -1;
+	while (rangeViewedPass < 6) //Отображение всех объектов карты
 	{
+		block presentBlock = getObject(viewPoint);
+		if (presentBlock != none)
+		{
+			if (presentBlock == monsterUM)
+			{
+				isMonstorInFront = true;
+				monsterInFrontRange = rangeViewedPass;
+			}
+			else 
+				break;
+		}
+
 		updatePlayerMap(viewPoint);
 
 		POINT viewPointLeft = moveDirectionLeft(viewPoint, player.viewDirection);
@@ -463,6 +477,8 @@ void showGameCanvas()
 		rangeViewedPass++;
 	}
 	showObject(getObject(viewPoint), rangeViewedPass, frontSide);
+	if(isMonstorInFront)
+		showObject(monsterUM, monsterInFrontRange, frontSide);
 
 	showPlayerMap(); //Отрисовка мини-карты
 	showCompas(); //Отображение компаса

@@ -116,10 +116,6 @@ void inline showNone(short range, sidesEnum side)
 	wallPrototype.biggestBaseS.y = wallPrototype.smallestBaseS.y;
 	trapeze(wallPrototype, noneBrush);
 }
-void inline showMonster(short range, sidesEnum side)
-{
-	trapeze(getTrapezeCoords(range, side), monsterBrush);
-}
 void inline showDoor(short range, sidesEnum side)
 {
 	trapeze(getTrapezeCoords(range, side), doorBrush);
@@ -143,4 +139,55 @@ void inline showCube(POINT pos, COLORREF color)
 	HBRUSH oldBrush = (HBRUSH)SelectObject(mainWindowHDC, (HBRUSH)CreateSolidBrush(color));
 	Rectangle(mainWindowHDC, cubePos(pos.x), cubePos(pos.y), cubePos(pos.x + 1), cubePos(pos.y + 1));
 	SelectObject(mainWindowHDC, oldBrush);
+}
+
+
+
+ char monsterSprite[11][11] = {
+	"   ###    ",
+	"  #####   ",
+	"  # # ### ",
+	" #########",
+	"###   ####",
+	"###   ### ",
+	"# ####### ",
+	"   #######",
+	"  ###  ## ",
+	" ###   ## "
+};
+
+void Cube(HDC hdc, int x, int y, int size)
+{
+	//Rectangle(hdc, x, y, screenSize.x - (x + size), screenSize.y - (y + size));
+	constexpr unsigned short cubePointsCount = 4;
+	const POINT cubePolygons[cubePointsCount] = { { x, y }, { x + size, y }, { x + size, y + size }, { x, y + size } };
+
+	Polygon(mainWindowHDC, cubePolygons, cubePointsCount);
+}
+
+void inline showMonster(short range, sidesEnum side)
+{
+	if (side == frontSide)
+	{
+		VERTICAL_TRAPEZE monsterTextureSizes = getTrapezeCoords(range, side);
+		POINT upLeftSpritePoint = monsterTextureSizes.biggestBaseF;
+		POINT spriteSize = { monsterTextureSizes.smallestBaseS.x - monsterTextureSizes.biggestBaseF.x, monsterTextureSizes.smallestBaseS.y - monsterTextureSizes.biggestBaseF.y };
+		POINT oneSpriteCubeSize = { spriteSize.x / 10, spriteSize.y / 10 };
+
+		for (int y = 0; y < 10; y++)
+		{
+			for (int x = 0; x < 10; x++)
+			{
+				if (monsterSprite[y][x] == '#')
+				{
+					HBRUSH oldBrush = (HBRUSH)SelectObject(mainWindowHDC, monsterBrush);
+					Cube(mainWindowHDC, upLeftSpritePoint.x + oneSpriteCubeSize.x * x + 1, upLeftSpritePoint.y + oneSpriteCubeSize.y * y + 1, oneSpriteCubeSize.x);
+					//Rectangle(mainWindowHDC, upLeftSpritePoint.x + oneSpriteCubeSize.x * x, upLeftSpritePoint.y + oneSpriteCubeSize.y * y, screenSize.x - (upLeftSpritePoint.x + oneSpriteCubeSize.x * (x + 1)), screenSize.y - (upLeftSpritePoint.y + oneSpriteCubeSize.y * (y + 1)));
+					SelectObject(mainWindowHDC, oldBrush);
+				}
+			}
+		}
+	}
+	else
+		trapeze(getTrapezeCoords(range, side), monsterBrush);
 }
