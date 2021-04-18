@@ -5,6 +5,7 @@ HBRUSH blackBrush = CreateSolidBrush(RGB(0, 0, 0));
 HBRUSH wallBrush = CreateSolidBrush(RGB(169, 169, 169));
 HBRUSH noneBrush = CreateSolidBrush(RGB(128, 128, 128));
 HBRUSH doorBrush = CreateSolidBrush(RGB(0, 255, 0));
+HBRUSH doorOpenerBrush = CreateSolidBrush(RGB(150, 75, 0));
 HBRUSH monsterBodyBrush = CreateSolidBrush(RGB(41, 41, 41));
 HBRUSH monsterEyesBrush = CreateSolidBrush(RGB(255, 0, 0));
 HBRUSH monsterMouthBrush = CreateSolidBrush(RGB(15, 15, 15));
@@ -118,10 +119,6 @@ void inline showNone(short range, sidesEnum side)
 	wallPrototype.biggestBaseS.y = wallPrototype.smallestBaseS.y;
 	trapeze(wallPrototype, noneBrush);
 }
-void inline showDoor(short range, sidesEnum side)
-{
-	trapeze(getTrapezeCoords(range, side), doorBrush);
-}
 void inline showCube(unsigned int x, unsigned int y)
 {
 	Rectangle(mainWindowHDC, cubePos(x), cubePos(y), cubePos(x + 1), cubePos(y + 1));
@@ -142,7 +139,6 @@ void inline showCube(POINT pos, COLORREF color)
 	Rectangle(mainWindowHDC, cubePos(pos.x), cubePos(pos.y), cubePos(pos.x + 1), cubePos(pos.y + 1));
 	SelectObject(mainWindowHDC, oldBrush);
 }
-
 
 
  char monsterSprite[11][11] = {
@@ -203,4 +199,56 @@ void inline showMonster(short range, sidesEnum side)
 	}
 	else
 		trapeze(getTrapezeCoords(range, side), monsterBodyBrush);
+}
+
+
+char doorSprite[11][11] = {
+	"          ",
+	"          ",
+	"  ######  ",
+	"  ######  ",
+	"  ######  ",
+	"  ######  ",
+	"  ####.#  ",
+	"  ######  ",
+	"  ######  ",
+	"  ######  "
+};
+
+void inline showDoor(short range, sidesEnum side)
+{
+	if (side == frontSide)
+	{
+		VERTICAL_TRAPEZE doorTextureSizes = getTrapezeCoords(range, side);
+		POINT upLeftSpritePoint = doorTextureSizes.biggestBaseF;
+		POINT spriteSize = { doorTextureSizes.smallestBaseS.x - doorTextureSizes.biggestBaseF.x, doorTextureSizes.smallestBaseS.y - doorTextureSizes.biggestBaseF.y };
+		POINT oneSpriteCubeSize = { spriteSize.x / 10, spriteSize.y / 10 };
+
+		for (int y = 0; y < 10; y++)
+		{
+			for (int x = 0; x < 10; x++)
+			{
+				if (doorSprite[y][x] == '#')
+				{
+					HBRUSH oldBrush = (HBRUSH)SelectObject(mainWindowHDC, doorBrush);
+					Cube(mainWindowHDC, upLeftSpritePoint.x + oneSpriteCubeSize.x * x, upLeftSpritePoint.y + oneSpriteCubeSize.y * y, oneSpriteCubeSize.x);
+					SelectObject(mainWindowHDC, oldBrush);
+				}
+				else if (doorSprite[y][x] == '.')
+				{
+					HBRUSH oldBrush = (HBRUSH)SelectObject(mainWindowHDC, doorOpenerBrush);
+					Cube(mainWindowHDC, upLeftSpritePoint.x + oneSpriteCubeSize.x * x, upLeftSpritePoint.y + oneSpriteCubeSize.y * y, oneSpriteCubeSize.x);
+					SelectObject(mainWindowHDC, oldBrush);
+				}
+				else if (doorSprite[y][x] == ' ')
+				{
+					HBRUSH oldBrush = (HBRUSH)SelectObject(mainWindowHDC, wallBrush);
+					Cube(mainWindowHDC, upLeftSpritePoint.x + oneSpriteCubeSize.x * x, upLeftSpritePoint.y + oneSpriteCubeSize.y * y, oneSpriteCubeSize.x);
+					SelectObject(mainWindowHDC, oldBrush);
+				}
+			}
+		}
+	}
+	else
+		trapeze(getTrapezeCoords(range, side), doorBrush);
 }
