@@ -422,6 +422,17 @@ void showPlayerMap()
 	}
 }
 
+void showFloor()
+{
+	HBRUSH oldBrush = (HBRUSH)SelectObject(mainWindowHDC, floorBrush);
+	constexpr unsigned short floorPointsCount = 4;
+	int downOfLongestFrontWallY = getTrapezeCoords(6, frontSide).smallestBaseS.y;
+	int rightOfNearestWallX = getTrapezeCoords(0, rightSide).biggestBaseS.x;
+	const POINT floorPolygons[floorPointsCount] = { { 0, downOfLongestFrontWallY }, { rightOfNearestWallX, downOfLongestFrontWallY }, { rightOfNearestWallX, screenSize.y }, { 0, screenSize.y } };
+	Polygon(mainWindowHDC, floorPolygons, floorPointsCount);
+	SelectObject(mainWindowHDC, oldBrush);
+}
+
 
 block getObject(int x, int y)
 {
@@ -447,9 +458,10 @@ void showObject(block obj, short range, sidesEnum side)
 
 void showGameCanvas()
 {
+	showFloor();
+
 	int rangeViewedPass = 0;
 	POINT viewPoint = player.pos;
-
 	bool isMonstorInFront = false;
 	int monsterInFrontRange = -1;
 	while (rangeViewedPass < 6) //Отображение всех объектов карты

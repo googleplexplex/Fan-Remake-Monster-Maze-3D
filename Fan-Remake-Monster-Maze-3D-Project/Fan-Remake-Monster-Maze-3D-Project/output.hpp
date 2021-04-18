@@ -9,6 +9,7 @@ HBRUSH doorOpenerBrush = CreateSolidBrush(RGB(150, 75, 0));
 HBRUSH monsterBodyBrush = CreateSolidBrush(RGB(41, 41, 41));
 HBRUSH monsterEyesBrush = CreateSolidBrush(RGB(255, 0, 0));
 HBRUSH monsterMouthBrush = CreateSolidBrush(RGB(15, 15, 15));
+HBRUSH floorBrush = CreateSolidBrush(RGB(50, 50, 50));
 struct LINE
 {
 	POINT f;
