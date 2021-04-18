@@ -36,7 +36,7 @@ void winPage_onKeyPressed(unsigned int key)
 	}
 }
 
-byte presentEditedColor = R;
+byte presentEditedColor = G;
 bool editColorUp = true;
 const int slowKoef = 50;
 
